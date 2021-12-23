@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Python: controller 2D",
+            "type": "python",
+            "request": "launch",
+            "program": "controller2d.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python: Current File in current Directory",
             "type": "python",
             "request": "launch",
@@ -24,7 +31,9 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "env": {"PYTHONPATH": "../:."},
+            "env": {
+                "PYTHONPATH": "../:."
+            },
             "console": "integratedTerminal",
             "cwd": "${fileDirname}"
         },

@@ -1,3 +1,7 @@
 {
-    "python.pythonPath": "/usr/local/anaconda3/envs/fastpose/bin/python"
+    "python.pythonPath": "/usr/local/anaconda3/envs/fastpose/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": false,
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.banditEnabled": false
 }

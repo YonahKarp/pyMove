@@ -164,7 +164,7 @@ class Keyboard():
 
     # See: https://stackoverflow.com/q/3202629/55075
     def toKeyCode(self, c):
-        shiftKey = True
+        shiftKey = False
         # Letter
         if c.isalpha():
             if not c.islower():

@@ -1,15 +1,32 @@
 
 
-
+from keyboard import Keyboard
+actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm']
 
 actionCnfg = {
-    'left': {
+    'hard left': {
         'key': 'left',
         'type': 'sustain',
     },
-    'right': {
+    'hard right': {
         'key': 'right',
         'type': 'sustain',
+    },
+    'm': {
+        'key': 'm',
+        'type': 'None'
+    },
+    'left': {
+        'key': 'left',
+        'otherKey': 'm',
+        'otherAction': 'left',
+        'type': 'multi',
+    },
+    'right': {
+        'key': 'right',
+        'otherKey': 'm',
+        'otherAction': 'right',
+        'type': 'multi',
     },
     'up': {
         'key': 'up',
@@ -41,30 +58,33 @@ actionCnfg = {
     },
     'lHand right': {
         'key': 'z',
-        'other': 'right',
+        'otherKey': 'right',
+        'otherAction': 'right',
         'type': 'multi',
     }, 
     'lHand up': {
         'key': 'z',
-        'other': 'up',
+        'otherKey': 'up',
+        'otherAction': 'up',
         'type': 'multi',
     },
     'lHand left': {
         'key': 'z',
-        'other': 'left',
+        'otherKey': 'left',
+        'otherAction': 'left',
         'type': 'multi',
     },
     'lHand down': {
         'key': 'z',
-        'other': 'down',
+        'otherKey': 'down',
+        'otherAction': 'down',
         'type': 'multi',
     }
 }
 
 
 
-from keyboard import Keyboard
-actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z']
+
 
 
 if __name__ == "__main__":

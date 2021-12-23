@@ -121,7 +121,7 @@ class Drawer:
 
         img = img.copy()
 
-        img = cv2.rectangle(img, (0,0), (img.shape[1], 20), Drawer.TXT_BACKGROUND, cv2.FILLED)
+        # img = cv2.rectangle(img, (0,0), (img.shape[1], 20), Drawer.TXT_BACKGROUND, cv2.FILLED)
 
         # if not isinstance(fps, type(None)):
         #     img = Drawer.draw_text(img, (img.shape[1]-178,0), "running at "+str(fps)+" fps",size=13,color=Drawer.TXT_FOREGROUND)

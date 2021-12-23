@@ -1,16 +1,17 @@
 from datetime import time
 import cv2
-from numpy.core.defchararray import join
 from src.system.interface import AnnotatorInterface
 from src.utils.drawer import Drawer
 import time
 import numpy as np
 import math
-
 from threading import Timer
 
 
 from keyboard import Keyboard
+from joint import Joint2D
+from overlay import *
+
 from ssbb_controls import actionCnfg
 
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -27,30 +28,23 @@ GREEN = (0,255, 0)
 CYAN = (255,255, 0)
 
 
-
-jointNames = ["head", "leftShoulder", "rightShoulder", "leftElbow", "rightElbow", "leftWrist", "rightWrist", "leftHip",
-            "rightHip", "leftKnee", "rightKnee", "leftAnkle", "rightAnkle"]
-[HEAD, LEFTSHOULDER, RIGHTSHOULDER, LEFTELBOW, RIGHTELBOW, LEFTWRIST, RIGHTWRIST, LEFTHIP,
-            RIGHTHIP, LEFTKNEE, RIGHTKNEE, LEFTANKLE, RIGHTANKLE] = jointNames
+jointNames = ["head", "l_shoulder", "r_shoulder", "l_elbow", "r_elbow", "l_wrist", "r_wrist", "l_hip", "r_hip", "l_knee", "r_knee", "l_ankle", "r_ankle"]
 
 height = .3
 mid = .5
-
 
 def start():
 
     annotator = AnnotatorInterface.build(max_persons=1)
 
-
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-
-
-    # background = getBackground(cap)
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
 
     mask = np.zeros((720, 1280))
-    mask[:, 0:300] = 1
-    mask[:, 980:1280] = 1
+    mask[:, 0:250] = 1
+    mask[:, 1030:1280] = 1
+
+    joints = [Joint2D(name, (-1,-1)) for name in jointNames]
 
     while(True):
 
@@ -59,7 +53,6 @@ def start():
         if not ret:
             break
 
-        # frame = removeBackground(frame, background)
         frame[mask == 1] = (0,0,0)
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -69,9 +62,6 @@ def start():
         fps = int(1/(time.time()-tmpTime))
 
         poses = [p['pose_2d'] for p in persons]
-
-
-
         ids = [p['id'] for p in persons]
         frame = Drawer.draw_scene(frame, poses, ids, fps, cap.get(cv2.CAP_PROP_POS_FRAMES))
 
@@ -83,26 +73,26 @@ def start():
         pose = poses[0] if len(poses) else None
 
         if(pose):
-            joints = dict(zip(jointNames, pose.joints))
-
+            for i, coords in enumerate(pose.joints):
+                joints[i].update(coords)
+ 
+            frame = frame.astype(np.float32) # for overlay clipping
             checkForActions(joints, frame)
         else:
             handlePresses([])
 
 
         # if DEBUG == 2:
-        pressed = dict(filter(lambda e: e[1] == True, pressCheck.items()))
-        cv2.putText(frame, str(pressed),(20,650), font, 1,RED,3,cv2.LINE_AA)
+        # pressed = dict(filter(lambda e: e[1] == True, pressCheck.items()))
+        # putText(frame, str(pressed),(20,650), RED, 1)
 
 
         if SHOW:
+            frame = np.clip(frame,0,255).astype(np.uint8) # undo from overlay clipping avoidance
             cv2.imshow('frame', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('p'):
-            break
-    
-        # if cv2.waitKey(1) & 0xFF == ord('b'):
-        #     background = getBackground(cap)
+            PAUSED = True
 
 
     annotator.terminate()
@@ -110,18 +100,14 @@ def start():
     cv2.destroyAllWindows()
 
 def getBackground(cap):
-
       while(True):
-
         ret, frame = cap.read()
 
-        if not ret:
-            break
+        if not ret:  break
         if cv2.waitKey(33) == ord(' '):
-              return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        cv2.putText(frame,'Press Space to capture background',
-            (200,200), font, 1.5,GREEN,3,cv2.LINE_AA)
+        putText(frame,'Press Space to capture background', (200,200), GREEN)
         cv2.imshow('frame', frame)
 
 def removeBackground(frame, background):
@@ -141,117 +127,130 @@ def removeBackground(frame, background):
 
 
 
-
-def checkForActions(joints, frame):
+def checkForActions(joints : 'list[Joint2D]', frame):
     actions = []
     global height
     global mid
     global PAUSED
-    shoulderSpan = abs(joints[LEFTSHOULDER][0] - joints[RIGHTSHOULDER][0])
-    armSpan = bonesDist(joints[RIGHTSHOULDER], joints[RIGHTELBOW]) + bonesDist(joints[RIGHTELBOW], joints[RIGHTWRIST])
-    hipSpan = abs(joints[LEFTHIP][0] - joints[RIGHTHIP][0])
 
+    head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip, l_knee, r_knee, l_ankle, r_ankle = joints
 
+    shoulderSpan = l_shoulder.dist(r_shoulder)
+    armSpan = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
+    hipSpan = l_hip.dist(r_hip)
+
+# Unpause
     if PAUSED:
-        if(joints[RIGHTWRIST][0] < joints[RIGHTSHOULDER][0] - armSpan*.7 and 
-        joints[LEFTWRIST][0] > joints[LEFTSHOULDER][0] + armSpan*.5):
-            cv2.putText(frame,'calibrate',(450,400), font, 2,GREEN,3,cv2.LINE_AA)
+        if(r_wrist.isRightOf(r_shoulder, armSpan*.7) 
+          and l_wrist.isLeftOf(l_shoulder, armSpan*.5)):
             PAUSED = False
             calibrate(joints)
         else:
-            cv2.putText(frame,'pause',(500,400), font, 2,GREEN,3,cv2.LINE_AA)
+            putText(frame,'pause',(500,400), GREEN)
             return
 
 # Lateral Movement
-    if((joints[LEFTSHOULDER][0] + joints[RIGHTSHOULDER][0])/2  > mid + .35*shoulderSpan):
-        cv2.putText(frame,'left',(200,200), font, 2,GREEN,3,cv2.LINE_AA)
+    if(l_shoulder.midPointX(r_shoulder) > mid + .7*shoulderSpan):
+        maskLeft(frame, 1.5)
+        actions.append('hard left')
+
+    elif(l_shoulder.midPointX(r_shoulder) > mid + .35*shoulderSpan):
+        maskLeft(frame)
         actions.append('left')
 
-    elif((joints[LEFTSHOULDER][0] + joints[RIGHTSHOULDER][0])/2  < mid - .35*shoulderSpan):
-        cv2.putText(frame,'right',(200,200), font, 2,GREEN,3,cv2.LINE_AA)
+    elif(l_shoulder.midPointX(r_shoulder)  < mid - .7*shoulderSpan):
+        maskRight(frame, 1.5)
+        actions.append('hard right')
+    
+    elif(l_shoulder.midPointX(r_shoulder)  < mid - .35*shoulderSpan):
+        maskRight(frame)
         actions.append('right')
 
 
 # vertical Movement
 
-    if(joints[LEFTSHOULDER][1] < (height*.9) and 
-       joints[RIGHTSHOULDER][1] < (height*.9)):
-        cv2.putText(frame,'up',(200,200), font, 2,GREEN,3,cv2.LINE_AA)
+    if(l_shoulder.y     < (height*.9)  
+      and r_shoulder.y  < (height*.9)):
+        frame = maskUp(frame)
         actions.append('up')
 
-    if(joints[RIGHTSHOULDER][1]  > (height + .1) and 
-       joints[LEFTSHOULDER][1] > (height + .1)):
-        cv2.putText(frame,'down',(200,200), font, 2,GREEN,3,cv2.LINE_AA)
+    if(l_shoulder.y     > (height + .1)  
+      and r_shoulder.y  > (height + .1)):
+        frame = maskDown(frame)
         actions.append('down')
 
 # Dual Hand
 
     #  PAUSE
-    if(abs(joints[RIGHTWRIST][0] - joints[LEFTWRIST][0]) < shoulderSpan and 
-        abs(joints[RIGHTWRIST][1] - joints[LEFTWRIST][1]) < shoulderSpan and 
-            joints[RIGHTWRIST][1] < joints[HEAD][1] and 
-            joints[LEFTWRIST][1]  < joints[HEAD][1]):
-             PAUSED = True
-             calibrate(joints)
+    if(r_wrist.distX(l_wrist) < shoulderSpan  
+      and r_wrist.distY(l_wrist) < shoulderSpan 
+      and r_wrist.isAbove(head)
+      and l_wrist.isAbove(head)):
+        PAUSED = True
+        calibrate(joints)
 
 
     # BLOCK
-    elif(abs(joints[RIGHTWRIST][0] - joints[LEFTWRIST][0]) < shoulderSpan*.4 and \
-        abs(joints[RIGHTWRIST][1] - joints[LEFTWRIST][1]) < shoulderSpan*.4 and \
-            joints[LEFTSHOULDER][0] > joints[RIGHTWRIST][0] > joints[RIGHTSHOULDER][0] and \
-            joints[RIGHTSHOULDER][0] < joints[LEFTWRIST][0] < joints[LEFTSHOULDER][0] and \
-            (joints[RIGHTWRIST][1] + joints[LEFTWRIST][1])/2  < (joints[RIGHTHIP][1] + joints[LEFTHIP][1])/2):
-             cv2.putText(frame,'block',(200,400), font, 2,CYAN,3,cv2.LINE_AA)
-             actions.append('block')
+    elif(r_wrist.isCloseToX(l_wrist,shoulderSpan*.4)
+      and r_wrist.isCloseToY(l_wrist,shoulderSpan*.4)
+      and r_wrist.isBetweenX(l_shoulder, r_shoulder)
+      and l_wrist.isBetweenX(l_shoulder, r_shoulder)
+      and l_wrist.midPointY(r_wrist) < l_hip.midPointY(r_hip)):
+        putText(frame,'block',(200,400), CYAN)
+        actions.append('block')
 
     # CALIBRATE
-    elif(joints[RIGHTWRIST][0] < joints[RIGHTSHOULDER][0] - armSpan*.7 and \
-        joints[LEFTWRIST][0] > joints[LEFTSHOULDER][0] + armSpan*.5):
-            cv2.putText(frame,'calibrate',(200,400), font, 2,CYAN,3,cv2.LINE_AA)
-            PAUSED = False
-            calibrate(joints)
+    elif(r_wrist.isRightOf(r_shoulder, armSpan*.7) 
+      and l_wrist.isLeftOf(l_shoulder, armSpan*.5)):
+        putText(frame,'calibrate',(200,400), CYAN)
+        calibrate(joints)
 
 
 # Right Hand
 
-    elif(joints[RIGHTWRIST][1] < joints[RIGHTSHOULDER][1] - armSpan*.5):
-            cv2.putText(frame,'rHand up',(200,400), font, 2,CYAN,3,cv2.LINE_AA)
-            actions.append('rHand up')
+    elif(r_wrist.isAbove(r_shoulder, shoulderSpan*.5) 
+      or (r_wrist.isAbove(r_shoulder, shoulderSpan*.3) and r_wrist.isRightOf(r_shoulder, shoulderSpan*.7))):
+        maskRight_AtkU(frame)
+        actions.append('rHand up')
 
-    elif(joints[RIGHTWRIST][0] < joints[RIGHTSHOULDER][0] - shoulderSpan):
-         cv2.putText(frame,'rHand right',(200,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('rHand right')
+    elif(r_wrist.isRightOf(r_shoulder, shoulderSpan*.9)):
+        maskRight_AtkR(frame)
+        actions.append('rHand right')
 
+    elif(r_wrist.isLeftOf(r_shoulder, armSpan*.3)):
+        maskRight_AtkL(frame)
+        actions.append('rHand left')
 
-    elif(joints[RIGHTWRIST][0] > joints[RIGHTSHOULDER][0] + armSpan*.3):
-         cv2.putText(frame,'rHand left',(200,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('rHand left')
+    elif( (r_wrist.isBetweenX(r_hip, l_hip) and r_wrist.isBelow(r_hip) and r_wrist.isBelow(l_hip))
+      or ((pressCheck['rHand right'] or pressCheck['rHand down'])
+        and (r_wrist.isRightOf(r_shoulder, shoulderSpan*.65) and r_wrist.isBelow(r_elbow, shoulderSpan*.45)))
+    ):
+        maskRight_AtkD(frame)
 
-    elif(joints[RIGHTHIP][0] < joints[RIGHTWRIST][0] < joints[LEFTHIP][0] and \
-        joints[RIGHTWRIST][1] > (joints[RIGHTHIP][1] + joints[LEFTHIP][1])/2):
-         cv2.putText(frame,'rHand down',(200,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('rHand down')
+        actions.append('rHand down')
 
 # Left Hand
 
-    elif(joints[LEFTWRIST][1] < joints[LEFTSHOULDER][1] - armSpan*.5):
-         cv2.putText(frame,'lHand up',(700,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('lHand up')
+    elif(l_wrist.isAbove(l_shoulder, shoulderSpan*.5)
+      or (r_wrist.isAbove(r_shoulder, shoulderSpan*.3) and r_wrist.isRightOf(r_shoulder, shoulderSpan*.7))):
+        maskLeft_AtkU(frame)
+        actions.append('lHand up')
 
-    elif(joints[LEFTWRIST][0] > joints[LEFTSHOULDER][0] + shoulderSpan):
-         cv2.putText(frame,'lHand left',(700,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('lHand left')
+    elif(l_wrist.isLeftOf(l_shoulder, shoulderSpan*.9)):
+        maskLeft_AtkL(frame)
+        actions.append('lHand left')
 
-    elif(joints[RIGHTHIP][0] < joints[LEFTWRIST][0] < joints[LEFTHIP][0] and \
-        joints[LEFTWRIST][1] > (joints[RIGHTHIP][1] + joints[LEFTHIP][1])/2):
-         cv2.putText(frame,'lHand down',(700,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('lHand down')
 
-    elif(joints[LEFTWRIST][0] < joints[RIGHTHIP][0] ):
-         cv2.putText(frame,'lHand right',(700,400), font, 2,CYAN,3,cv2.LINE_AA)
-         actions.append('lHand right')
+    elif(l_wrist.isRightOf(l_shoulder, armSpan*.3)):
+        maskLeft_AtkR(frame)
+        actions.append('lHand right')
 
-    
+    elif(l_wrist.isBetweenX(r_hip, l_hip) and l_shoulder.y > (height + .04) and l_wrist.isBelow(r_hip) and l_wrist.isBelow(l_hip)
+      or ((pressCheck['lHand left'] or pressCheck['lHand down'])
+        and (l_wrist.isLeftOf(l_shoulder, shoulderSpan*.65) and l_wrist.isBelow(l_elbow, shoulderSpan*.45)))
+    ):
+        maskLeft_AtkD(frame)
+        actions.append('lHand down')
 
     
     if DEBUG == 1:
@@ -263,49 +262,26 @@ def bonesDist(joint1, joint2):
     return math.sqrt(((joint1[0]-joint2[0])**2)+((joint1[1]-joint2[1])**2) )
 
 
-def calibrate(joints):
+def calibrate(joints : 'list[Joint2D]'):
     global height
     global mid
 
-    height = (joints[LEFTSHOULDER][1] + joints[RIGHTSHOULDER][1])/2
-    mid = (joints[LEFTSHOULDER][0] + joints[RIGHTSHOULDER][0])/2
+    _, l_shoulder, r_shoulder, _, _, _, _, _, _, _, _, _, _ = joints
+
+    height = l_shoulder.midPointY(r_shoulder)
+    mid = l_shoulder.midPointX(r_shoulder)
     for key in actionKeys:
         keyboard.KeyUp(key)
     for action in actionsNames:
         pressCheck[action] = False
 
 actionsNames = ['left', 'right', 'up', 'down', 'block', 'rHand right', 'rHand up', 'rHand left', 'rHand down',
-        'lHand right', 'lHand up', 'lHand left', 'lHand down']
+        'lHand right', 'lHand up', 'lHand left', 'lHand down', 'hard left', 'hard right', 'm']
 
-actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z']
+actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm']
 
-# pressTimer = dict(zip(actionsNames, [0]*len(actionsNames)))
-# keysDict =  dict(zip(actionsNames, actionKeys))
 
 pressCheck = dict(zip(actionsNames, [0]*len(actionsNames)))
-
-
-# def handlePresses(actions):
-
-#     for action in pressTimer:
-#         if action in actions:
-#             if(pressTimer[action] == 0):
-#                 key = keysDict[action]
-#                 splitKeys = key.split('+')
-#                 if(len(splitKeys) > 1):
-#                     keyboard.KeyDown(splitKeys[0])
-#                     keyboard.KeyDown(splitKeys[1])
-#                     keyboard.KeyUp(splitKeys[0])
-#                 else:
-#                     keyboard.KeyDown(key)
-            
-#             pressTimer[action] = 3
-#         elif(pressTimer[action] > 1):
-#             pressTimer[action] -= 1
-#         elif(pressTimer[action] == 1):
-#             pressTimer[action] -= 1
-#             key = keysDict[action]
-#             keyboard.KeyUp(key)
 
 def handlePresses(actions):
     for action in actionsNames:
@@ -316,32 +292,29 @@ def handlePresses(actions):
             type = config['type']
 
             if(type == 'multi' and not pressCheck[action]):
-                other = config['other']
-                keyboard.KeyDown(other)
-                Timer(0.3, cancelPress, (other, other)).start()
+                otherKey = config['otherKey']
+                otherAction = config['otherAction']
+                keyboard.KeyDown(otherKey)
+                Timer(0.25, cancelPress, (otherKey, otherAction)).start()
 
             keyboard.KeyDown(key)
             pressCheck[action] = True
 
             # if(type != 'sustain'):
-            Timer(0.3, cancelPress, (key, action)).start()
+            Timer(0.25, cancelPress, (key, action)).start()
         else:
             pressCheck[action] = False
             # keyboard.KeyUp(key)
 
 
 
-           
-            
-
 def cancelPress(key, action):
     if(not pressCheck[action]):
         keyboard.KeyUp(key)
-        print(f'cancel {key}:{action}')
+        # print(f'cancel {key}:{action}')
     else:
-        print(f'NOT CANCELED {key}:{action}')
-
-
+        Timer(0.25, cancelPress, (key, action)).start()
+        # print(f'NOT CANCELED {key}:{action}')
 
 
 if __name__ == "__main__":
@@ -350,7 +323,7 @@ if __name__ == "__main__":
     for key in actionKeys:
         keyboard.KeyUp(key)
 
-    print("start")
+
     start()
 
 

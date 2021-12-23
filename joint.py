@@ -16,10 +16,10 @@ class Joint2D():
         self.x = x
         self.y = y
 
-    def isAbove(self, other): return self.y < other.y
-    def isBelow(self, other): return self.y > other.y
-    def isRightOf(self, other): return self.x < other.x
-    def isLeftOf(self, other): return self.x > other.x
+    def isAbove(self, other, offset=0):     return self.y < other.y     - offset
+    def isBelow(self, other, offset=0):     return self.y > other.y     + offset
+    def isRightOf(self, other, offset=0):   return self.x < other.x     - offset
+    def isLeftOf(self, other, offset=0):    return self.x > other.x     + offset
 
     def isBetweenX(self, one, two): 
         return one.x < self.x < two.x or two.x < self.x < one.x
@@ -28,9 +28,13 @@ class Joint2D():
     def isInside(self, one, two):
         return self.isBetweenX(one, two) and self.isBetweenY(one, two)
 
-    def isCloseToX(self, other, prox=.025): return abs(self.x - other.x) < prox
-    def isCloseToY(self, other, prox=.025): return abs(self.y - other.y) < prox
     def isCloseTo(self, other, prox=.025): return self.dist(other) < prox
+    def isCloseToX(self, other, prox=.025): return self.distX(other) < prox
+    def isCloseToY(self, other, prox=.025): return self.distY(other) < prox
+
+    def midPointX(self, other): return (self.x + other.x)/2
+    def midPointY(self, other): return (self.y + other.y)/2
+
 
 
 
@@ -39,3 +43,7 @@ class Joint2D():
     
     def dist(self, other):
         return math.sqrt(((self.x- other.x)**2)+((self.y-other.y)**2) )
+    def distX(self, other):
+        return abs(self.x - other.x)
+    def distY(self, other):
+        return abs(self.y - other.y)
