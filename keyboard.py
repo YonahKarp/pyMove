@@ -7,6 +7,7 @@ import time
 from Quartz.CoreGraphics import CGEventCreateKeyboardEvent
 from Quartz.CoreGraphics import CGEventPost
 from Quartz.CoreGraphics import kCGHIDEventTap
+
 #from Quartz.CoreGraphics import CFRelease # Python releases things automatically.
 
 class Keyboard():
@@ -226,3 +227,5 @@ class Keyboard():
         for key in text:
             self.KeyDown(key)
             self.KeyUp(key)
+
+keyboard = Keyboard()

@@ -40,6 +40,10 @@ actionCnfg = {
         'key': 'q',
         'type': 'sustain',
     },
+    'rHand jab': {
+        'key': 'x',
+        'type': 'press',
+    },
     'rHand right': {
         'key': 'd',
         'type': 'press',
@@ -54,6 +58,10 @@ actionCnfg = {
     },
     'rHand down': {
         'key': 's',
+        'type': 'press',
+    },
+    'lHand jab': {
+        'key': 'z',
         'type': 'press',
     },
     'lHand right': {
@@ -79,6 +87,10 @@ actionCnfg = {
         'otherKey': 'down',
         'otherAction': 'down',
         'type': 'multi',
+    },
+    'start': {
+        'key': ' ',
+        'type': 'press',
     }
 }
 
