@@ -9,7 +9,7 @@ from ssbb_controls import actionKeys
 
 
 actionsNames = [
-    'left', 'right', 'up', 'down', 'block', 'hard left', 'hard right', 'start',
+    'left', 'right', 'jump', 'duck', 'block', 'hard left', 'hard right', 'start',
     'rHand jab', 'rHand right', 'rHand up', 'rHand left', 'rHand down',
     'lHand jab', 'lHand right', 'lHand up', 'lHand left', 'lHand down'
 ]
@@ -18,20 +18,14 @@ actionsNames = [
 
 def checkForActions(joints : 'list[Joint2D]', frame, pressCheck):
     actions = []
+    lateral_movement = ''
 
 
     head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip, l_knee, r_knee, l_ankle, r_ankle = joints
 
     span = l_shoulder.dist(r_shoulder)
-
-# Unpause
-    if config.PAUSED:
-        if(r_wrist.isRightOf(r_shoulder, span*.2) 
-          and l_wrist.isLeftOf(l_shoulder, span*.2)):
-            config.PAUSED = False
-            calibrate(joints, pressCheck)
-        else:
-            return []
+    r_arm = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
+    l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
 # Lateral Movement
     if(l_shoulder.midPointX(r_shoulder) > config.mid + .75*span):
@@ -51,17 +45,18 @@ def checkForActions(joints : 'list[Joint2D]', frame, pressCheck):
         actions.append('right')
 
 
+
 # vertical Movement
 
-    if(l_shoulder.y     < (config.height*.9)  
-      and r_shoulder.y  < (config.height*.9)):
-        frame = maskUp(frame)
-        actions.append('up')
+    if(l_shoulder.y     < (config.height - .15*span)  
+      and r_shoulder.y  < (config.height - .15*span)):
+        maskUp(frame)
+        actions.append('jump')
 
     if(l_shoulder.y     > (config.height + .1)  
       and r_shoulder.y  > (config.height + .1)):
-        frame = maskDown(frame)
-        actions.append('down')
+        maskDown(frame)
+        actions.append('duck')
 
 # Dual Hand
 
@@ -75,17 +70,17 @@ def checkForActions(joints : 'list[Joint2D]', frame, pressCheck):
 
 
     # BLOCK
-    elif(r_wrist.isCloseToX(l_wrist,span*.4)
-      and r_wrist.isCloseToY(l_wrist,span*.4)
-      and r_wrist.isLeftOf(r_shoulder)
-      and l_wrist.isRightOf(l_shoulder)
-      and l_wrist.midPointY(r_wrist) < l_hip.midPointY(r_hip)):
+    elif(r_wrist.isCloseTo(l_wrist, span*.6) and r_wrist.isAbove(r_hip) and l_wrist.isAbove(l_hip)
+        or ((r_wrist.isCloseTo(r_shoulder, span*.7) or r_wrist.isCloseTo(l_shoulder, span*.7))
+          and (l_wrist.isCloseTo(l_shoulder, span*.7) or l_wrist.isCloseTo(r_shoulder, span*.7)))
+      ):
         putText(frame,'block',(.4,.5), CYAN)
         actions.append('block')
 
     # CALIBRATE
-    elif(r_wrist.isRightOf(r_shoulder, span*.9) 
-      and l_wrist.isLeftOf(l_shoulder, span*.9)):
+    elif(r_wrist.isRightOf(r_shoulder, r_arm*.9) 
+      and l_wrist.isLeftOf(l_shoulder, l_arm*.9)):
+        config.calibrating = True
         putText(frame,'calibrate',(.3,.5), CYAN)
         calibrate(joints, pressCheck)
 
@@ -97,20 +92,20 @@ def checkForActions(joints : 'list[Joint2D]', frame, pressCheck):
         maskRight_AtkU(frame)
         actions.append('rHand up')
 
-    elif(r_wrist.isRightOf(r_shoulder, span*.9) and r_wrist.isCloseToY(r_shoulder, span*1.1)):
+    elif(r_wrist.isRightOf(r_shoulder, r_arm*.7)):
         maskRight_AtkR(frame)
         actions.append('rHand right')
 
-    elif(r_wrist.isLeftOf(r_shoulder, span*.5)):
+    elif(r_wrist.isLeftOf(r_shoulder, span*.8) and r_wrist.isAbove(r_hip)):
         maskRight_AtkL(frame)
         actions.append('rHand left')
 
-    elif( 
-    #     (r_wrist.isBetweenX(r_shoulder, l_shoulder)  #and r_shoulder.y > (config.height + .04) 
-    #   and r_shoulder.isBelow(l_shoulder, span*.2)
-    #   and r_wrist.isBelow(r_hip, span*.3) or r_wrist.isBelow(l_hip, span*.3))
+    elif( r_wrist.isBetweenX(r_shoulder, l_shoulder) 
+      and r_shoulder.isBelow(l_shoulder, span*.15) and l_shoulder.y  > (config.height + span*.2)
+      and r_wrist.isBelow(r_hip, span*.15) and r_wrist.isBelow(l_hip, span*.15)
     #     or 
-        (r_wrist.isRightOf(r_shoulder, span*.85) and r_wrist.isBelow(r_shoulder, span*1.1))
+        # (r_wrist.isRightOf(r_shoulder, r_arm*.55) and r_wrist.isBelow(r_shoulder, span*1.1)
+        #   and r_wrist.isInline(r_elbow, r_shoulder, span*.2))
     #   or ((pressCheck['rHand right'] or pressCheck['rHand down'])
     #     and (r_wrist.isRightOf(r_shoulder, span*.65) and r_wrist.isBelow(r_elbow, span*.45)))
     ):
@@ -128,23 +123,22 @@ def checkForActions(joints : 'list[Joint2D]', frame, pressCheck):
     elif(l_wrist.isAbove(l_shoulder, span*.4)
       or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))):
         maskLeft_AtkU(frame)
-        actions.append('lHand up')
+        actions.append('lHand up' + lateral_movement)
 
     elif(l_wrist.isLeftOf(l_shoulder, span*.9) and l_wrist.isCloseToY(l_shoulder, span*1.1)):
         maskLeft_AtkL(frame)
         actions.append('lHand left')
 
 
-    elif(l_wrist.isRightOf(l_shoulder, span*.5)):
+    elif(l_wrist.isRightOf(l_shoulder, l_arm*.7)):
         maskLeft_AtkR(frame)
         actions.append('lHand right')
 
-    elif(
-    #     l_wrist.isBetweenX(r_shoulder, l_shoulder) #and l_shoulder.y > (config.height + .04) 
-    #   and l_shoulder.isBelow(r_shoulder, span*.2)
-    #   and l_wrist.isBelow(r_hip, span*.3) or l_wrist.isBelow(l_hip, span*.3)
-    #     or 
-        (l_wrist.isLeftOf(l_shoulder, span*.85) and l_wrist.isBelow(l_shoulder, span*1.1))
+    elif(l_wrist.isBetweenX(r_shoulder, l_shoulder) 
+      and l_shoulder.isBelow(r_shoulder, span*.15) and r_shoulder.y  > (config.height + span*.2)
+      and l_wrist.isBelow(r_hip, span*.15) and l_wrist.isBelow(l_hip, span*.15)
+        # (l_wrist.isLeftOf(l_shoulder, l_arm*.55) and l_wrist.isBelow(l_shoulder, span*1.1)
+        #   and l_wrist.isInline(l_elbow, l_shoulder, span*.2))
     #   and l_wrist.isCloseTo(l_hip, span*.3)
     #   or ((pressCheck['lHand left'] or pressCheck['lHand down'])
     #     and (l_wrist.isLeftOf(l_shoulder, span*.65) and l_wrist.isBelow(l_elbow, span*.45)))
@@ -167,11 +161,12 @@ def pauseActions(joints : 'list[Joint2D]', frame, pressCheck):
 
     head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip, l_knee, r_knee, l_ankle, r_ankle = joints
     span = l_shoulder.dist(r_shoulder)
-    armSpan = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
+    r_arm = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
+    l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
 # Unpause
-    if(r_wrist.isRightOf(r_shoulder, span*.2) 
-        and l_wrist.isLeftOf(l_shoulder, span*.2)):
+    if(r_wrist.isRightOf(r_shoulder, r_arm*.9) 
+      and l_wrist.isLeftOf(l_shoulder, l_arm *.9)):
         config.PAUSED = False
         calibrate(joints, pressCheck)
         return []

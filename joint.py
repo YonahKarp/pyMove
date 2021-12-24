@@ -35,8 +35,10 @@ class Joint2D():
     def midPointX(self, other): return (self.x + other.x)/2
     def midPointY(self, other): return (self.y + other.y)/2
 
-
-
+    def isInline(self, one, two, offset=.025):
+        areaTraiangle = abs(self.x * (one.y - two.y) + one.x * (two.y - self.y) + two.x * (self.y - one.y))
+        # assert(areaTraiangle >= 0)
+        return areaTraiangle <= offset
 
 
 # Utils
@@ -47,3 +49,15 @@ class Joint2D():
         return abs(self.x - other.x)
     def distY(self, other):
         return abs(self.y - other.y)
+
+class Joint3D(Joint2D):
+    def __init__(self, name, coords3D):
+        x,y,z = coords3D
+        super().__init__(name, (x,y))
+        self.z = z
+
+    def isInFrontOf(self, other, offset=0): return self.z < other.z - offset
+    def isBehind(self, other, offset=0): return self.z > other.z + offset
+
+    
+

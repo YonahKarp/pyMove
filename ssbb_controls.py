@@ -5,11 +5,12 @@ actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm', 'x
 directionKeys = ['left', 'right', 'up', 'down']
 
 class Action():
-    def __init__(self, key, sustain=False, multi=False, otherKey=None):
+    def __init__(self, key, sustain=False, multi=False, otherKey=None, keepDirection=None):
         self.key = key
         self.sustain = sustain
         self.multi = multi
         self.otherKey = otherKey
+        self.keepDirection = keepDirection
 
     def params(self):
         return (self.key, self.sustain, self.multi, self.otherKey)
@@ -20,8 +21,8 @@ actionCnfg = {
     'hard right':   Action('right', True),
     'left':         Action('left', True, True, 'm'),
     'right':        Action('right', True, True, 'm'),
-    'up':           Action('up', True),
-    'down':         Action('down', True),
+    'jump':           Action('up', True),
+    'duck':         Action('down', True),
     'block':        Action('q', True),
     'rHand jab':    Action('x', True),
     'rHand right':  Action('d'),

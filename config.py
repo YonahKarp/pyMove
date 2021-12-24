@@ -1,7 +1,11 @@
 
+
+
 DEBUG = False
 PAUSED = True
-SHOW = True
+SHOW = False
 
+
+calibrating = False
 height = .3
 mid = .5

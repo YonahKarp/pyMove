@@ -79,7 +79,7 @@ def maskLeft_AtkD(frame):
     frame[h-maskW:h, atkW:w-atkW, 0] = frame[h-maskW:h, atkW:w-atkW, 0] + a_dMask
     return np.clip(frame, 0, 255)
 
-if not config.SHOW :
+if config.SHOW < 2 :
     def putText(frame, text, coords, color, scale = 2): pass
     def maskLeft(frame, multiplyer=1): pass
     def maskRight(frame, multiplyer=1): pass

@@ -16,12 +16,13 @@ class AnnotatorInterface:
 
 
 
-    def __init__(self, bbox_model, pose_2d_model, pose_3d_model, max_persons):
+    def __init__(self, bbox_model, pose_2d_model, pose_3d_model, max_persons, use3D = False):
 
         self.bbox_model = bbox_model
         self.pose_2d_model = pose_2d_model
         self.pose_3d_model = pose_3d_model
 
+        self.use3D = use3D
 
         self.persons = {}
 
@@ -49,13 +50,13 @@ class AnnotatorInterface:
     Build the annotator interface using the model defined in the model factory
     """
     @staticmethod
-    def build(max_persons=1):
+    def build(max_persons=1, use3D=False):
 
         bbox_model = ModelFactory.build_object_detection_interface()
         pose_2d_model = ModelFactory.build_pose_2d_interface()
         pose_3d_model = ModelFactory.build_pose_3d_interface()
 
-        return AnnotatorInterface(bbox_model, pose_2d_model, pose_3d_model, max_persons)
+        return AnnotatorInterface(bbox_model, pose_2d_model, pose_3d_model, max_persons, use3D)
 
 
 
@@ -235,13 +236,18 @@ class AnnotatorInterface:
 
             new_poses_2d, confidences = self.pose_2d_model.predict(image, bboxes, poses_2d)
             confidences = np.array(confidences)
-            # new_poses_3d = self.pose_3d_model.predict(new_poses_2d)
+            
+            if(self.use3D):
+                new_poses_3d = self.pose_3d_model.predict(new_poses_2d)
 
             for i,pid in enumerate(pids):
                 curr_persons[pid]['bbox'] = new_poses_2d[i].to_bbox()
                 curr_persons[pid]['pose_2d'] = new_poses_2d[i]
-                # curr_persons[pid]['pose_3d'] = new_poses_3d[i]
                 curr_persons[pid]['confidence'] = confidences[i]
+
+                if(self.use3D):
+                    curr_persons[pid]['pose_3d'] = new_poses_3d[i]
+
 
             # update the annotations in the scope of the class
             with self.persons_lock:
@@ -259,14 +265,16 @@ class AnnotatorInterface:
                                              + 0.15 * self.persons[curr_person['id']]['pose_2d'].get_joints()
 
                         # note 2d joints are smoothed twice (todo)
-                        # smoothed_joints_3d = 0.85 * curr_person['pose_3d'].get_joints() \
-                        #                      + 0.15 * self.persons[curr_person['id']]['pose_3d'].get_joints()
 
                         smoothed_confidence = 0.85 * curr_person['confidence'] + 0.15 * self.persons[curr_person['id']]['confidence']
 
                         curr_person['pose_2d'] = Pose2D(smoothed_joints_2d)
-                        # curr_person['pose_3d'] = Pose3D(smoothed_joints_3d)
                         curr_person['confidence'] = smoothed_confidence
+
+                        if(self.use3D):
+                            smoothed_joints_3d = 0.85 * curr_person['pose_3d'].get_joints() \
+                                                + 0.15 * self.persons[curr_person['id']]['pose_3d'].get_joints()
+                            curr_person['pose_3d'] = Pose3D(smoothed_joints_3d)
 
 
                     curr_person['bbox'] = curr_person['pose_2d'].to_bbox()
@@ -302,8 +310,10 @@ class AnnotatorInterface:
             for i in range(PoseConfig.get_total_joints()):
                 joint2d = {'x': float(joints2d[i][0]), 'y': float(joints2d[i][1])}
                 annot['pose_2d'][PoseConfig.NAMES[i]] = joint2d
-                # joint3d = {'x': float(joints3d[i][0]), 'y': float(joints3d[i][1]), 'z': float(joints3d[i][2])}
-                # annot['pose_3d'][PoseConfig.NAMES[i]] = joint3d
+
+                if(self.use3D):
+                    joint3d = {'x': float(joints3d[i][0]), 'y': float(joints3d[i][1]), 'z': float(joints3d[i][2])}
+                    annot['pose_3d'][PoseConfig.NAMES[i]] = joint3d
 
             annotations.append(annot)
 

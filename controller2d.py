@@ -4,8 +4,9 @@ from src.system.interface import AnnotatorInterface
 from src.utils.drawer import Drawer
 import time
 import numpy as np
-import math
 from threading import Timer
+
+from WebcamStream import WebcamStream
 
 
 from keyboard import keyboard
@@ -24,42 +25,36 @@ jointNames = ["head", "l_shoulder", "r_shoulder", "l_elbow", "r_elbow", "l_wrist
 
 def start():
 
-    annotator = AnnotatorInterface.build(max_persons=1)
+    annotator = AnnotatorInterface.build(max_persons=1, use3D = False )
 
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
-
-    # mask = np.zeros(shape)
-    # mask[:, 0:250] = 1
-    # mask[:, 1030:1280] = 1
+    cap = WebcamStream().start()
 
     joints = [Joint2D(name, (-1,-1)) for name in jointNames]
     start = time.time()
 
-
     frameNum = 0
-    showFrames = 3
+    showFrames = 2
+    destroyWindow = False
+
+    # if config.SHOW:
+    #     cv2.namedWindow('frame')        # Create a named window
+        # cv2.moveWindow('frame', 1700,100)  # Move it to (40,30)
+
+
     while(True):
         # print(time.time() - start)
-        start = time.time()
+        # start = time.time()
         frameNum += 1
-        
-        ret, frame = cap.read()
-
-        if not ret:
-            break
+            
+        frame = cap.read()
 
         frame = frame[:, 250:frame.shape[1]-250]
         frame = cv2.resize(frame, (int(frame.shape[1]*.5), int(frame.shape[0]*.5)), interpolation = cv2.INTER_AREA)
 
 
-        # frame[mask == 1] = (0,0,0)
-
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        tmpTime = time.time()
         persons = annotator.update(frame)
-        fps = int(1/(time.time()-tmpTime))
 
         poses = [p['pose_2d'] for p in persons]
         ids = [p['id'] for p in persons]
@@ -67,16 +62,16 @@ def start():
         confidence = sum(persons[0]['confidence']) if len(persons) else 0        
 
         if(confidence > 6.5):
-            frame = Drawer.draw_scene(frame, poses, ids, fps, cap.get(cv2.CAP_PROP_POS_FRAMES))
+            frame = Drawer.draw_scene(frame, poses, ids)
 
-        if config.SHOW and frameNum % showFrames == 0:
+        if config.SHOW > 0 and frameNum % showFrames == 0:
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             frame = cv2.flip(frame, 1)
 
 
         pose = poses[0] if len(poses) else None
 
-        if(pose and confidence > 6):
+        if(pose and confidence > 6.5):
             for i, coords in enumerate(pose.joints):
                 joints[i].update(coords)
  
@@ -87,20 +82,26 @@ def start():
         else:
             handlePresses([])
 
-
-        # if DEBUG == 2:
-        # pressed = dict(filter(lambda e: e[1] == True, pressCheck.items()))
-        # putText(frame, str(pressed),(20,650),F RED, 1)
-
-
         if config.PAUSED:
             putText(frame,'pause',(.4,.5), GREEN)
 
-        if config.SHOW and frameNum % showFrames == 0:
+        if (config.SHOW > 0 and frameNum % showFrames == 0):
             frame = np.clip(frame,0,255).astype(np.uint8) # undo from overlay clipping avoidance
             if config.DEBUG:
                 frame = cv2.resize(frame, (int(frame.shape[1]*2), int(frame.shape[0]*2)), interpolation = cv2.INTER_NEAREST)
             cv2.imshow('frame', frame)
+        elif not config.SHOW:
+            if(config.calibrating or config.PAUSED):
+                frame = np.clip(frame,0,255).astype(np.uint8) # undo from overlay clipping avoidance
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                frame = cv2.flip(frame, 1)
+                cv2.imshow('frame', frame)
+                config.calibrating = False
+                destroyWindow = True
+            elif(destroyWindow):
+                destroyWindow = False
+                cv2.destroyWindow('frame')
+
 
         if cv2.waitKey(1) & 0xFF == ord('p'):
             config.PAUSED = True
@@ -111,9 +112,7 @@ def start():
     cv2.destroyAllWindows()
 
 
-
 actionCheck = dict(zip(actionsNames, [0]*len(actionsNames)))
-
 
 def handlePresses(actions):
     keyCheck = dict(zip(actionKeys, [0]*len(actionKeys)))
@@ -134,8 +133,6 @@ def handlePresses(actions):
                     keyCheck[otherKey] = True
 
             else:
-
-            
                 if(not actionCheck[action]):
                     keyboard.KeyDown(key)
                     Timer(0.25, cancelPress, (key, action)).start()
@@ -153,7 +150,6 @@ def handlePresses(actions):
                 if(multi):  keyCheck[otherKey] = True
 
 
-            # Timer(0.25, cancelPress, (key, action)).start()
         else:
             deadActions.append(action)
 
@@ -174,18 +170,6 @@ def cancelPress(key, action = None):
     keyboard.KeyUp(key)
     if action:
         actionCheck[action] = False
-
-# def cancelPress(key, action):
-#     if(not actionCheck[action]):
-#         keyboard.KeyUp(key)
-#     else:
-#         Timer(0.25, cancelPress, (key, action)).start()
-
-# def cancelPress(key, action):
-#     if(not actionCheck[action]):
-#         keyboard.KeyUp(key)
-#     else:
-#         Timer(0.25, cancelPress, (key, action)).start()
 
 
 if __name__ == "__main__":
