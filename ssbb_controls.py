@@ -1,97 +1,39 @@
 
 
 from keyboard import Keyboard
-actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm']
+actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm', 'x', 'z',' ']
+directionKeys = ['left', 'right', 'up', 'down']
+
+class Action():
+    def __init__(self, key, sustain=False, multi=False, otherKey=None):
+        self.key = key
+        self.sustain = sustain
+        self.multi = multi
+        self.otherKey = otherKey
+
+    def params(self):
+        return (self.key, self.sustain, self.multi, self.otherKey)
+
 
 actionCnfg = {
-    'hard left': {
-        'key': 'left',
-        'type': 'sustain',
-    },
-    'hard right': {
-        'key': 'right',
-        'type': 'sustain',
-    },
-    'm': {
-        'key': 'm',
-        'type': 'None'
-    },
-    'left': {
-        'key': 'left',
-        'otherKey': 'm',
-        'otherAction': 'left',
-        'type': 'multi',
-    },
-    'right': {
-        'key': 'right',
-        'otherKey': 'm',
-        'otherAction': 'right',
-        'type': 'multi',
-    },
-    'up': {
-        'key': 'up',
-        'type': 'sustain',
-    },
-    'down': {
-        'key': 'down',
-        'type': 'sustain',
-    },
-    'block': {
-        'key': 'q',
-        'type': 'sustain',
-    },
-    'rHand jab': {
-        'key': 'x',
-        'type': 'press',
-    },
-    'rHand right': {
-        'key': 'd',
-        'type': 'press',
-    },
-    'rHand up': {
-        'key': 'w',
-        'type': 'press',
-    },
-    'rHand left': {
-        'key': 'a',
-        'type': 'press',
-    },
-    'rHand down': {
-        'key': 's',
-        'type': 'press',
-    },
-    'lHand jab': {
-        'key': 'z',
-        'type': 'press',
-    },
-    'lHand right': {
-        'key': 'z',
-        'otherKey': 'right',
-        'otherAction': 'right',
-        'type': 'multi',
-    }, 
-    'lHand up': {
-        'key': 'z',
-        'otherKey': 'up',
-        'otherAction': 'up',
-        'type': 'multi',
-    },
-    'lHand left': {
-        'key': 'z',
-        'otherKey': 'left',
-        'otherAction': 'left',
-        'type': 'multi',
-    },
-    'lHand down': {
-        'key': 'z',
-        'otherKey': 'down',
-        'otherAction': 'down',
-        'type': 'multi',
-    },
-    'start': {
-        'key': ' ',
-        'type': 'press',
-    }
+    'hard left':    Action('left', True),
+    'hard right':   Action('right', True),
+    'left':         Action('left', True, True, 'm'),
+    'right':        Action('right', True, True, 'm'),
+    'up':           Action('up', True),
+    'down':         Action('down', True),
+    'block':        Action('q', True),
+    'rHand jab':    Action('x', True),
+    'rHand right':  Action('d'),
+    'rHand up':     Action('w'),
+    'rHand left':   Action('a'),
+    'rHand down':   Action('s'),
+    'lHand jab':    Action('z', True),
+    'lHand right':  Action('z', False, True, 'right'),
+    'lHand up':     Action('z', False, True, 'up'),
+    'lHand left':   Action('z', False, True, 'left'),
+    'lHand down':   Action('z', False, True, 'down'),
+    'start':        Action(' ')
 }
 
 

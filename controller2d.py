@@ -11,9 +11,9 @@ from threading import Timer
 from keyboard import keyboard
 from joint import Joint2D
 from overlay import putText
-from ssbb_actions import checkForActions, pauseActions, actionsNames, actionKeys
+from ssbb_actions import checkForActions, pauseActions, actionsNames
 
-from ssbb_controls import actionCnfg
+from ssbb_controls import actionCnfg, actionKeys, directionKeys
 from constants import *
 import config 
 
@@ -34,14 +34,14 @@ def start():
     # mask[:, 1030:1280] = 1
 
     joints = [Joint2D(name, (-1,-1)) for name in jointNames]
-    # start = time.time()
+    start = time.time()
 
 
     frameNum = 0
     showFrames = 3
     while(True):
         # print(time.time() - start)
-        # start = time.time()
+        start = time.time()
         frameNum += 1
         
         ret, frame = cap.read()
@@ -81,8 +81,8 @@ def start():
                 joints[i].update(coords)
  
             frame = frame.astype(np.float32) # for overlay clipping
-            actions = pauseActions(joints, frame, pressCheck)  if config.PAUSED \
-              else checkForActions(joints, frame, pressCheck) 
+            actions = pauseActions(joints, frame, actionCheck)  if config.PAUSED \
+              else checkForActions(joints, frame, actionCheck) 
             handlePresses(actions)
         else:
             handlePresses([])
@@ -90,7 +90,7 @@ def start():
 
         # if DEBUG == 2:
         # pressed = dict(filter(lambda e: e[1] == True, pressCheck.items()))
-        # putText(frame, str(pressed),(20,650), RED, 1)
+        # putText(frame, str(pressed),(20,650),F RED, 1)
 
 
         if config.PAUSED:
@@ -98,7 +98,8 @@ def start():
 
         if config.SHOW and frameNum % showFrames == 0:
             frame = np.clip(frame,0,255).astype(np.uint8) # undo from overlay clipping avoidance
-            # frame = cv2.resize(frame, (int(frame.shape[1]*2), int(frame.shape[0]*2)), interpolation = cv2.INTER_NEAREST)
+            if config.DEBUG:
+                frame = cv2.resize(frame, (int(frame.shape[1]*2), int(frame.shape[0]*2)), interpolation = cv2.INTER_NEAREST)
             cv2.imshow('frame', frame)
 
         if cv2.waitKey(1) & 0xFF == ord('p'):
@@ -111,36 +112,80 @@ def start():
 
 
 
-pressCheck = dict(zip(actionsNames, [0]*len(actionsNames)))
+actionCheck = dict(zip(actionsNames, [0]*len(actionsNames)))
+
 
 def handlePresses(actions):
+    keyCheck = dict(zip(actionKeys, [0]*len(actionKeys)))
+
+    deadActions = []
     for action in actionsNames:
         config = actionCnfg[action]
-        key = config['key']
+        key, sustain, multi, otherKey = config.params()
 
         if action in actions:
-            type = config['type']
+            
+            if(sustain):
+                keyboard.KeyDown(key)
+                keyCheck[key] = True
 
-            if(type == 'multi' and not pressCheck[action]):
-                otherKey = config['otherKey']
-                otherAction = config['otherAction']
-                keyboard.KeyDown(otherKey)
-                Timer(0.25, cancelPress, (otherKey, otherAction)).start()
+                if(multi and not keyCheck[otherKey]):
+                    keyboard.KeyDown(otherKey)
+                    keyCheck[otherKey] = True
 
-            keyboard.KeyDown(key)
-            pressCheck[action] = True
-            Timer(0.25, cancelPress, (key, action)).start()
+            else:
+
+            
+                if(not actionCheck[action]):
+                    keyboard.KeyDown(key)
+                    Timer(0.25, cancelPress, (key, action)).start()
+                    actionCheck[action] = True
+
+                    if(multi and not keyCheck[otherKey]):
+                        if otherKey in directionKeys:
+                            for k in directionKeys:
+                                keyboard.KeyUp(k)
+
+                        keyboard.KeyDown(otherKey)
+                        Timer(0.20, cancelPress, (otherKey,)).start()
+
+                keyCheck[key] = True
+                if(multi):  keyCheck[otherKey] = True
+
+
+            # Timer(0.25, cancelPress, (key, action)).start()
         else:
-            pressCheck[action] = False
-            # keyboard.KeyUp(key)
+            deadActions.append(action)
 
+    # second loop becuase we don't want to KeyUp before we know all action input
+    for action in deadActions:
+        config = actionCnfg[action]
 
+        key, sustain, multi, otherKey = config.params()
 
-def cancelPress(key, action):
-    if(not pressCheck[action]):
-        keyboard.KeyUp(key)
-    else:
-        Timer(0.25, cancelPress, (key, action)).start()
+        if not keyCheck[key]:
+            keyboard.KeyUp(key)
+
+        if(multi and not keyCheck[otherKey]):
+            keyboard.KeyUp(otherKey)
+        
+
+def cancelPress(key, action = None):
+    keyboard.KeyUp(key)
+    if action:
+        actionCheck[action] = False
+
+# def cancelPress(key, action):
+#     if(not actionCheck[action]):
+#         keyboard.KeyUp(key)
+#     else:
+#         Timer(0.25, cancelPress, (key, action)).start()
+
+# def cancelPress(key, action):
+#     if(not actionCheck[action]):
+#         keyboard.KeyUp(key)
+#     else:
+#         Timer(0.25, cancelPress, (key, action)).start()
 
 
 if __name__ == "__main__":
