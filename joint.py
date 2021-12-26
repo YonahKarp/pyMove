@@ -1,7 +1,9 @@
 import math
+from constants import *
+import config
 
 class Joint2D():
-    body = {}
+    body = []
 
     def __init__(self, name, x,y, z=-1):
    
@@ -10,15 +12,38 @@ class Joint2D():
         self.z = z
         self.name = name
 
-        Joint2D.body[name] = self
+        Joint2D.body.append(self)
 
     def update(self, x,y,z=0):
         self.x = x
         self.y = y
         self.z = z
 
+    @staticmethod
+    def calcZ(landmarks):
+        head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip = Joint2D.body
+
+        for landmark in landmarks:
+            landmark.z = 0
+
+        r_bicep = r_shoulder.dist(r_elbow)
+        l_bicep = l_shoulder.dist(l_elbow)
+        r_forearm =  r_elbow.dist(r_wrist)
+        l_forearm =  l_elbow.dist(l_wrist) 
+
+        r_elbow.z = math.sqrt(max(config.r_bicep**2 - r_bicep**2, 0)) + r_shoulder.z
+        l_elbow.z = math.sqrt(max(config.l_bicep**2 - l_bicep**2,0)) + l_shoulder.z
+        r_wrist.z = math.sqrt(max(config.r_forearm**2 - r_forearm**2,0)) + r_elbow.z
+        l_wrist.z = math.sqrt(max(config.l_forearm**2 - l_forearm**2,0)) + l_elbow.z
+
+
+        landmarks[RIGHT_ELBOW].z    = r_elbow.z
+        landmarks[LEFT_ELBOW].z     = l_elbow.z
+        landmarks[RIGHT_WRIST].z    = r_wrist.z
+        landmarks[LEFT_WRIST].z     = l_wrist.z
     
 
+#  Relative logic
     def isAbove(self, other, offset=0):     return self.y < other.y     - offset
     def isBelow(self, other, offset=0):     return self.y > other.y     + offset
     def isRightOf(self, other, offset=0):   return self.x < other.x     - offset
@@ -43,8 +68,8 @@ class Joint2D():
         # assert(areaTraiangle >= 0)
         return areaTraiangle <= offset
 
-    def isInFrontOf(self, other, offset=0): return self.z < other.z - offset
-    def isBehind(self, other, offset=0): return self.z > other.z + offset
+    def isBehind(self, other, offset=0): return self.z < other.z - offset
+    def isInFrontOf(self, other, offset=0): return self.z > other.z + offset
 
 
 # Utils

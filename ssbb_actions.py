@@ -70,7 +70,9 @@ def checkForActions(joints : 'list[Joint2D]', frame):
 
 
     # BLOCK
-    elif(r_wrist.isCloseTo(l_wrist, span*.6) and r_wrist.isAbove(r_hip, span*.6) and l_wrist.isAbove(l_hip, span*.6)
+    elif(
+        # r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(l_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8)
+        r_wrist.isCloseTo(l_wrist, span*.6) and r_wrist.isAbove(r_hip, span*.6) and l_wrist.isAbove(l_hip, span*.6)
         or ((r_wrist.isCloseTo(r_shoulder, span*.7) or r_wrist.isCloseTo(l_shoulder, span*.7))
           and (l_wrist.isCloseTo(l_shoulder, span*.7) or l_wrist.isCloseTo(r_shoulder, span*.7)))
       ):
@@ -112,7 +114,7 @@ def checkForActions(joints : 'list[Joint2D]', frame):
         actions.append('rHand down')
 
     elif(
-        r_wrist.isCloseTo(r_shoulder, span*.7) and r_wrist.isInFrontOf(r_hip, .7)
+        r_wrist.isInFrontOf(r_hip, config.r_arm*.825)
     #   or
     #    (r_elbow.isRightOf(r_shoulder, span*.55) and r_elbow.isRightOf(r_wrist, r_wrist.dist(r_elbow)*.6))
       ):
@@ -185,10 +187,19 @@ def pauseActions(joints : 'list[Joint2D]', frame):
 
 def calibrate(joints : 'list[Joint2D]'):
 
-    _, l_shoulder, r_shoulder, _, _, _, _, _, _, = joints
+    head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, _, _, = joints
 
     config.height = l_shoulder.midPointY(r_shoulder)
     config.mid = l_shoulder.midPointX(r_shoulder)
+    config.span = l_shoulder.dist(r_shoulder)
+    config.r_bicep = r_shoulder.dist(r_elbow)
+    config.l_bicep = l_shoulder.dist(l_elbow)
+    config.r_forearm =  r_elbow.dist(r_wrist)
+    config.l_forearm =  l_elbow.dist(l_wrist)
+    config.r_arm = config.r_bicep + config.r_forearm
+    config.l_arm = config.l_bicep + config.l_forearm
+    config.calibrated = True
+
     for key in actionKeys:
         keyboard.KeyUp(key)
     for action in actionsNames:

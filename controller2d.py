@@ -49,29 +49,36 @@ def start():
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame.flags.writeable = False
-        start = time.time()
         results = pose.process(frame)
-        print(time.time() - start)
 
         frame.flags.writeable = True
 
         landmarks = results.pose_landmarks
 
+
+    # update joints
+        if(landmarks):
+            tempJoints = [landmarks.landmark[i] for i in landmark_list]
+            
+            for i, joint in enumerate(tempJoints):
+                joints[i].update(joint.x,joint.y)
+
+            
+            if(config.calibrated):
+                Joint2D.calcZ(landmarks.landmark)
+
+    # Draw joints
         if (config.SHOW > 0 and frameNum % showFrames == 0):
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             if(landmarks):
+                
                 mp_drawing.draw_landmarks(frame,results.pose_landmarks,mp_pose.UPPER_BODY_POSE_CONNECTIONS)
 
             frame = cv2.flip(frame, 1)
 
            
-
+    # actions
         if(landmarks):
-            tempJoints = [landmarks.landmark[i] for i in landmark_list]
-            
-            for i, joint in enumerate(tempJoints):
-                joints[i].update(joint.x,joint.y, joint.z)
- 
             frame = frame.astype(np.float32) # for overlay clipping
             actions = pauseActions(joints, frame)  if config.PAUSED \
               else checkForActions(joints, frame) 
@@ -83,7 +90,7 @@ def start():
 
 
             
-
+    # Display window
         if config.PAUSED:
             putText(frame,'pause',(.4,.5), GREEN)
 
