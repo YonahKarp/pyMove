@@ -164,64 +164,52 @@ class Keyboard():
     }
 
     # See: https://stackoverflow.com/q/3202629/55075
+    # def toKeyCode(self, c):
+    #     shiftKey = False
+    #     # Letter
+    #     if c.isalpha():
+    #         if not c.islower():
+    #             shiftKey = False
+    #             c = c.lower()
+    #     if c in Keyboard.shiftChars:
+    #         shiftKey = True
+    #         c = Keyboard.shiftChars[c]
+    #     if c in Keyboard.keyCodeMap:
+    #         keyCode = Keyboard.keyCoxdeMap[c]
+    #     else:
+    #         keyCode = ord(c)
+    #     return keyCode, shiftKey
+
     def toKeyCode(self, c):
-        shiftKey = False
-        # Letter
-        if c.isalpha():
-            if not c.islower():
-                shiftKey = False
-                c = c.lower()
-        if c in Keyboard.shiftChars:
-            shiftKey = True
-            c = Keyboard.shiftChars[c]
         if c in Keyboard.keyCodeMap:
             keyCode = Keyboard.keyCodeMap[c]
         else:
             keyCode = ord(c)
-        return keyCode, shiftKey
+        return keyCode
 
     def KeyDown(self, k):
-        keyCode, shiftKey = self.toKeyCode(k)
-
-        time.sleep(0.0001)
-
-        if shiftKey:
-            CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, 0x38, True))
-            time.sleep(0.0001)
+        keyCode = self.toKeyCode(k)
 
         CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, keyCode, True))
-        time.sleep(0.0001)
+        time.sleep(0.00001)
 
-        if shiftKey:
-            CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, 0x38, False))
-            time.sleep(0.0001)
 
     def KeyUp(self, k):
-        keyCode, shiftKey = self.toKeyCode(k)
-
-        time.sleep(0.0001)
+        keyCode = self.toKeyCode(k)
 
         CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, keyCode, False))
-        time.sleep(0.0001)
+        time.sleep(0.00001)
 
     def KeyPress(self, k):
-        keyCode, shiftKey = self.toKeyCode(k)
+        keyCode = self.toKeyCode(k)
 
-        time.sleep(0.0001)
-
-        if shiftKey:
-            CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, 0x38, True))
-            time.sleep(0.0001)
 
         CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, keyCode, True))
-        time.sleep(0.0001)
+        time.sleep(0.00001)
 
         CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, keyCode, False))
-        time.sleep(0.0001)
+        time.sleep(0.00001)
 
-        if shiftKey:
-            CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, 0x38, False))
-            time.sleep(0.0001)
 
     def Type(self, text):
         for key in text:

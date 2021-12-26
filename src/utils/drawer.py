@@ -47,7 +47,7 @@ class Drawer:
 
     """ Return a new image with the 2D pose depicted for a given src.utils.pose.pose2D"""
     @staticmethod
-    def draw_2d_pose(img, pose_2d, thickness=3):
+    def draw_2d_pose(img, pose_2d, thickness=3, _3d=None):
 
         img = img.copy()
 
@@ -74,7 +74,15 @@ class Drawer:
 
         for i in range(0,joints.shape[0]):
             color = Drawer.BONE_COLOR if i == 0 else Drawer.JOINT_COLOR
-            cv2.circle(img, (joints[i,0], joints[i,1]), 3, color, -1)
+
+            if(_3d):
+                z = _3d.joints[i][2]
+                if(z > 0):
+                    color = (0,0,0 + 1000*z)
+                else:
+                    color = (0 + 1000*-z,0,0)
+
+            cv2.circle(img, (joints[i,0], joints[i,1]), 10, color, -1)
 
         # draw the head as a point
 
@@ -117,7 +125,7 @@ class Drawer:
 
     """ Return a new image with all 2D pose depicted for a given list of annotations"""
     @staticmethod
-    def draw_scene(img, poses_2d, person_ids, fps=None, curr_frame=None):
+    def draw_scene(img, poses_2d, person_ids, fps=None, curr_frame=None, _3d=None):
 
         img = img.copy()
 
@@ -135,13 +143,13 @@ class Drawer:
         for pid in range(len(poses_2d)):
 
             # Draw the skeleton
-            img = Drawer.draw_2d_pose(img, poses_2d[pid])
+            img = Drawer.draw_2d_pose(img, poses_2d[pid], _3d=_3d)
 
             # The person id is written on the gravity center
 
-            tmp = poses_2d[pid].get_gravity_center()
-            tmp[0] = (tmp[0]+poses_2d[pid].get_joints()[PoseConfig.HEAD, 0])/2.0
-            tmp[1] = (tmp[1]+poses_2d[pid].get_joints()[PoseConfig.HEAD, 1])/2.0
+            # tmp = poses_2d[pid].get_gravity_center()
+            # tmp[0] = (tmp[0]+poses_2d[pid].get_joints()[PoseConfig.HEAD, 0])/2.0
+            # tmp[1] = (tmp[1]+poses_2d[pid].get_joints()[PoseConfig.HEAD, 1])/2.0
 
             # x, y = int(tmp[0]*img.shape[1]), int(tmp[1]*img.shape[0])
 

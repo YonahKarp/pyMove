@@ -1,8 +1,14 @@
+from Keyboard import keyboard
 
-
-from keyboard import Keyboard
 actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm', 'x', 'z',' ']
 directionKeys = ['left', 'right', 'up', 'down']
+actionsNames = [
+    'left', 'right', 'jump', 'duck', 'block', 'hard left', 'hard right', 'start',
+    'rHand jab', 'rHand right', 'rHand up', 'rHand left', 'rHand down',
+    'lHand jab', 'lHand right', 'lHand up', 'lHand left', 'lHand down',
+    'lHand up_left', 'lHand up_right'
+]
+
 
 class Action():
     def __init__(self, key, sustain=False, multi=False, otherKey=None, keepDirection=None):
@@ -34,16 +40,11 @@ actionCnfg = {
     'lHand up':     Action('z', False, True, 'up'),
     'lHand left':   Action('z', False, True, 'left'),
     'lHand down':   Action('z', False, True, 'down'),
+    'lHand up_left':     Action('z', False, True, 'up', 'left'),
+    'lHand up_right':     Action('z', False, True, 'up', 'right'),
     'start':        Action(' ')
 }
 
-
-
-
-
-
 if __name__ == "__main__":
-    keyboard = Keyboard()
-
     for key in actionKeys:
         keyboard.KeyUp(key)

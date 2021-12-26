@@ -3,18 +3,21 @@ import math
 class Joint2D():
     body = {}
 
-    def __init__(self, name, coords):
-        x,y = coords
+    def __init__(self, name, x,y, z=-1):
+   
         self.x = x
         self.y = y
+        self.z = z
         self.name = name
 
         Joint2D.body[name] = self
 
-    def update(self, coords):
-        x,y = coords
+    def update(self, x,y,z=0):
         self.x = x
         self.y = y
+        self.z = z
+
+    
 
     def isAbove(self, other, offset=0):     return self.y < other.y     - offset
     def isBelow(self, other, offset=0):     return self.y > other.y     + offset
@@ -40,6 +43,9 @@ class Joint2D():
         # assert(areaTraiangle >= 0)
         return areaTraiangle <= offset
 
+    def isInFrontOf(self, other, offset=0): return self.z < other.z - offset
+    def isBehind(self, other, offset=0): return self.z > other.z + offset
+
 
 # Utils
     
@@ -50,14 +56,8 @@ class Joint2D():
     def distY(self, other):
         return abs(self.y - other.y)
 
-class Joint3D(Joint2D):
-    def __init__(self, name, coords3D):
-        x,y,z = coords3D
-        super().__init__(name, (x,y))
-        self.z = z
 
-    def isInFrontOf(self, other, offset=0): return self.z < other.z - offset
-    def isBehind(self, other, offset=0): return self.z > other.z + offset
+   
 
     
 
