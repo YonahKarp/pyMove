@@ -13,23 +13,24 @@ from overlay import putText
 
 
 
-from actions.ssbb_actions import pointerActions, checkForActions, pauseActions
+from ssbb_actions import pointerActions, checkForActions, pauseActions
 
 from ssbb_controls import actionKeys
 from constants import *
 import config 
 
 
-mp_pose = mp.solutions.pose
-mp_holistic = mp.solutions.holistic
+mp_pose = mp.solutions.holistic
+
 mp_drawing = mp.solutions.drawing_utils
 
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 jointNames = ["head", "l_shoulder", "r_shoulder", "l_elbow", "r_elbow", "l_wrist", "r_wrist", "l_hip", "r_hip"]
-
 def start():
+    
+
 
     cap = WebcamStream(border=config.border, scale=config.scale).start()
 
@@ -39,21 +40,24 @@ def start():
     showFrames = 2
     destroyWindow = False
 
-    pose = mp.solutions.pose.Pose(upper_body_only=True,
+    pose = mp.solutions.holistic.Holistic(upper_body_only=True,
         min_detection_confidence=0.8,
         min_tracking_confidence=0.7)
 
 
     while(True):
-        # print(time.time() - start)
-        # start = time.time()
+        print(time.time() - start)
+        start = time.time()
         frameNum += 1
             
         frame = cap.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame.flags.writeable = False
+        start = time.time()
         results = pose.process(frame)
+        print(time.time() - start)
+
 
         frame.flags.writeable = True
 
@@ -77,6 +81,8 @@ def start():
             if(landmarks):
                 
                 mp_drawing.draw_landmarks(frame,results.pose_landmarks,mp_pose.UPPER_BODY_POSE_CONNECTIONS)
+                mp_drawing.draw_landmarks(frame,results.right_hand_landmarks,mp_pose.HAND_CONNECTIONS)
+
 
             frame = cv2.flip(frame, 1)
 

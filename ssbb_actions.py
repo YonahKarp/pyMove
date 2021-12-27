@@ -1,8 +1,10 @@
-from math import isclose
 from joint import Joint2D
 import config 
 
-from overlay import maskRight_jab, maskLeft_jab, putText, maskUp, maskDown, maskLeft, maskRight, maskLeft_AtkD, maskLeft_AtkL, maskLeft_AtkR, maskLeft_AtkU, maskRight_AtkD, maskRight_AtkL, maskRight_AtkR, maskRight_AtkU
+from overlay import maskPointer, maskRight_jab, maskLeft_jab, putText, \
+    maskUp, maskDown, maskLeft, maskRight, \
+    maskLeft_AtkD, maskLeft_AtkL, maskLeft_AtkR, maskLeft_AtkU, \
+    maskRight_AtkD, maskRight_AtkL, maskRight_AtkR, maskRight_AtkU
 from constants import *
 from Keyboard import keyboard
 from ssbb_controls import actionKeys, actionsNames
@@ -71,10 +73,11 @@ def checkForActions(joints : 'list[Joint2D]', frame):
 
     # BLOCK
     elif(
-        r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(l_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8)
-        # r_wrist.isCloseTo(l_wrist, span*.6) and r_wrist.isAbove(r_hip, span*.6) and l_wrist.isAbove(l_hip, span*.6)
-        # or ((r_wrist.isCloseTo(r_shoulder, span*.7) or r_wrist.isCloseTo(l_shoulder, span*.7))
-        #   and (l_wrist.isCloseTo(l_shoulder, span*.7) or l_wrist.isCloseTo(r_shoulder, span*.7)))
+        r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(l_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8) 
+        or r_wrist.isCloseToY(r_shoulder, span*.4) and l_wrist.isCloseToY(l_wrist, span*.4) and r_wrist.isCloseToY(l_wrist, span*.4) 
+        or r_wrist.isCloseToX(l_wrist, span*.55) and r_wrist.isAbove(r_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8)
+        or ((r_wrist.isCloseTo(r_shoulder, span*.3) or r_wrist.isCloseTo(l_shoulder, span*.3))
+          and (l_wrist.isCloseTo(l_shoulder, span*.3) or l_wrist.isCloseTo(r_shoulder, span*.3)))
       ):
         putText(frame,'block',(.4,.5), CYAN)
         actions.append('block')
@@ -95,7 +98,7 @@ def checkForActions(joints : 'list[Joint2D]', frame):
         maskRight_AtkU(frame)
         actions.append('rHand up')
 
-    elif(r_wrist.isRightOf(r_shoulder, r_arm*.75)):
+    elif(r_wrist.isRightOf(r_shoulder, config.r_arm*.7)):
         maskRight_AtkR(frame)
         actions.append('rHand right')
 
@@ -129,7 +132,7 @@ def checkForActions(joints : 'list[Joint2D]', frame):
         maskLeft_AtkU(frame)
         actions.append('lHand up' + lateral_movement)
 
-    elif(l_wrist.isLeftOf(l_shoulder, l_arm*.75)):
+    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7)):
         maskLeft_AtkL(frame)
         actions.append('lHand left')
 
@@ -183,6 +186,30 @@ def pauseActions(joints : 'list[Joint2D]', frame):
     #         actions.append('start')
 
     #     return actions
+
+def pointerActions(joints : 'list[Joint2D]', frame):
+    head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip = joints
+
+    span = l_shoulder.dist(r_shoulder)
+
+    if(r_wrist.distX(l_wrist) < span  
+      and r_wrist.distY(l_wrist) < span 
+      and r_wrist.isAbove(head)
+      and l_wrist.isAbove(head)):
+        config.PAUSED = True
+        calibrate(joints)
+
+    coords = (r_wrist.x, r_wrist.y)
+
+    if(coords[0] > -1 and coords[1] > -1):
+        maskPointer(frame, coords)
+        config.mouseLocation = coords
+        return ['move mouse']
+
+    
+    else:
+        return []
+
 
 
 def calibrate(joints : 'list[Joint2D]'):

@@ -1,6 +1,9 @@
+
 from ssbb_controls import actionCnfg, actionKeys, directionKeys
 from Keyboard import keyboard
+import Mouse as mouse
 from threading import Timer
+import config as cnfg
 
 from ssbb_controls import actionCnfg, directionKeys, actionsNames
 
@@ -17,6 +20,10 @@ class Controller():
         keyCheck = dict(zip(actionKeys, [0]*len(actionKeys)))
 
         deadActions = []
+        if('move mouse' in actions):
+            coords = cnfg.mouseLocation
+            mouse.move(*coords)
+
         for action in actionsNames:
             config = actionCnfg[action]
             key, sustain, multi, otherKey = config.params()

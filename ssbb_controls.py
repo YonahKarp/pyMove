@@ -42,7 +42,7 @@ actionCnfg = {
     'lHand down':   Action('z', False, True, 'down'),
     'lHand up_left':     Action('z', False, True, 'up', 'left'),
     'lHand up_right':     Action('z', False, True, 'up', 'right'),
-    'start':        Action(' ')
+    'start':        Action(' '),
 }
 
 if __name__ == "__main__":

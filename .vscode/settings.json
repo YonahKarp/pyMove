@@ -3,5 +3,10 @@
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": false,
     "python.linting.pycodestyleEnabled": false,
-    "python.linting.banditEnabled": false
+    "python.linting.banditEnabled": false,
+    "python.analysis.extraPaths": [
+        "./**",
+        "./actions",
+        "./controls"
+    ]
 }
