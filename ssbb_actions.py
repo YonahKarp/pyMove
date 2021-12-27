@@ -71,10 +71,10 @@ def checkForActions(joints : 'list[Joint2D]', frame):
 
     # BLOCK
     elif(
-        # r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(l_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8)
-        r_wrist.isCloseTo(l_wrist, span*.6) and r_wrist.isAbove(r_hip, span*.6) and l_wrist.isAbove(l_hip, span*.6)
-        or ((r_wrist.isCloseTo(r_shoulder, span*.7) or r_wrist.isCloseTo(l_shoulder, span*.7))
-          and (l_wrist.isCloseTo(l_shoulder, span*.7) or l_wrist.isCloseTo(r_shoulder, span*.7)))
+        r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(l_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8)
+        # r_wrist.isCloseTo(l_wrist, span*.6) and r_wrist.isAbove(r_hip, span*.6) and l_wrist.isAbove(l_hip, span*.6)
+        # or ((r_wrist.isCloseTo(r_shoulder, span*.7) or r_wrist.isCloseTo(l_shoulder, span*.7))
+        #   and (l_wrist.isCloseTo(l_shoulder, span*.7) or l_wrist.isCloseTo(r_shoulder, span*.7)))
       ):
         putText(frame,'block',(.4,.5), CYAN)
         actions.append('block')
@@ -113,13 +113,13 @@ def checkForActions(joints : 'list[Joint2D]', frame):
         maskRight_AtkD(frame)
         actions.append('rHand down')
 
-    elif(
-        r_wrist.isInFrontOf(r_hip, config.r_arm*.825)
-    #   or
-    #    (r_elbow.isRightOf(r_shoulder, span*.55) and r_elbow.isRightOf(r_wrist, r_wrist.dist(r_elbow)*.6))
-      ):
-        maskRight_jab(frame)
-        actions.append('rHand jab')
+    # elif(
+    #     r_wrist.isInFrontOf(r_elbow, config.r_forearm*.9) and r_wrist.isBelow(r_shoulder, span*1.2 )
+    # #   or
+    # #    (r_elbow.isRightOf(r_shoulder, span*.55) and r_elbow.isRightOf(r_wrist, r_wrist.dist(r_elbow)*.6))
+    #   ):
+    #     maskRight_jab(frame)
+    #     actions.append('rHand jab')
 
 # Left Hand
     

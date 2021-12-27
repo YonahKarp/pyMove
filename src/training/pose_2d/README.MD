@@ -1,1 +1,0 @@
-Launch jupyter from the current directory.

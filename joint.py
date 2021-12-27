@@ -26,6 +26,8 @@ class Joint2D():
         for landmark in landmarks:
             landmark.z = 0
 
+        # span = l_shoulder.dist(r_shoulder)
+
         r_bicep = r_shoulder.dist(r_elbow)
         l_bicep = l_shoulder.dist(l_elbow)
         r_forearm =  r_elbow.dist(r_wrist)
