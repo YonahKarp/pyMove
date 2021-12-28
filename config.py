@@ -1,11 +1,15 @@
 
 
+games = ['SSBB', 'PUNCH']
+GAME = games[1]
 
-GAME = 'SSBB'
-
-DEBUG = 2
-PAUSED = True
+DEBUG = False
 SHOW = DEBUG
+
+PAUSED = True
+POINTER = False
+
+
 
 border = 200
 scale = .2

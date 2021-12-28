@@ -20,11 +20,12 @@ class Joint2D():
         self.z = z
 
     @staticmethod
-    def calcZ(landmarks):
-        head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip = Joint2D.body
+    def calcZ(landmarks, joints):
+        head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip = joints
 
         for landmark in landmarks:
             landmark.z = 0
+            # hide unwanted
 
         # span = l_shoulder.dist(r_shoulder)
 
@@ -73,15 +74,39 @@ class Joint2D():
     def isBehind(self, other, offset=0): return self.z < other.z - offset
     def isInFrontOf(self, other, offset=0): return self.z > other.z + offset
 
+# Hand Gestures
+    @staticmethod
+    def isTrigger(hand):
+        wrist, thumb_mid,  thumb, pointer_mid, pointer, middle_mid, \
+        middle, index_mid, index, pinky_mid, pinky = hand or [noneJoint] * 11
+
+
+        if(
+            wrist.distXYZ(middle) < wrist.distXYZ(middle_mid)*1.25
+            or wrist.distXYZ(index) < wrist.distXYZ(index_mid)*1.25
+            # (middle.isBelow(wrist) and index.isBelow(wrist) )#and pinky.isAbove(wrist) and pointer.isAbove(wrist))
+          ):
+            return True
+        
+        return False
+
+
+
+
 
 # Utils
-    
+    def distXYZ(self, other):
+        return math.sqrt(((self.x- other.x)**2)+((self.y-other.y)**2) + (self.z-other.z)**2)
     def dist(self, other):
         return math.sqrt(((self.x- other.x)**2)+((self.y-other.y)**2) )
     def distX(self, other):
         return abs(self.x - other.x)
     def distY(self, other):
         return abs(self.y - other.y)
+    def distZ(self, other):
+        return abs(self.z - other.z)
+
+noneJoint = Joint2D('None', -1, -1)
 
 
    

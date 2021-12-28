@@ -103,17 +103,17 @@ def maskLeft_jab(frame):
     frame[b_jabMask, 0] = frame[b_jabMask, 0] + 150
     return np.clip(frame, 0, 255)
 
-def maskPointer(frame, coords):
+def maskPointer(frame, coords, color=1):
     x,y = coords
 
     x = int(w*x)
     x = w - x
     y = int(h*y)
     d = int(maskW/4)
-    frame[y-d:y+d, x-d:x+d, 1] = frame[y-d:y+d, x-d:x+d, 1] + 150
+    frame[y-d:y+d, x-d:x+d, color] = frame[y-d:y+d, x-d:x+d, color] + 150
 
     return frame
-    z
+    
 
 # Don't show masks
 if config.SHOW < 2 :

@@ -1,0 +1,28 @@
+         143539 function calls (143369 primitive calls) in 25.427 seconds
+
+   Ordered by: internal time
+   List reduced from 187 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      500   12.974    0.026   13.304    0.027 solution_base.py:250(process)
+      500    6.150    0.012    9.196    0.018 WebcamStream.py:32(read)
+     8294    3.177    0.000    3.177    0.000 {built-in method time.sleep}
+       61    1.157    0.019    1.157    0.019 {waitKey}
+        1    0.846    0.846    0.860    0.860 WebcamStream.py:7(__init__)
+      500    0.167    0.000    0.198    0.000 {built-in method builtins.exec}
+     5201    0.138    0.000    0.264    0.000 Keyboard.py:197(KeyUp)
+       85    0.131    0.002    0.131    0.002 {imshow}
+        1    0.091    0.091   25.440   25.440 controller2d.py:34(start)
+       85    0.071    0.001    0.071    0.001 {flip}
+      500    0.061    0.000    0.359    0.001 Controller.py:17(handlePresses)
+       85    0.050    0.001    0.050    0.001 {resize}
+        1    0.028    0.028    0.029    0.029 solution_base.py:177(__init__)
+     1002    0.025    0.000    0.042    0.000 {method 'join' of 'str' objects}
+      576    0.024    0.000    0.024    0.000 {method 'astype' of 'numpy.ndarray' objects}
+      500    0.017    0.000    0.267    0.001 __init__.py:357(namedtuple)
+      585    0.015    0.000    0.015    0.000 {cvtColor}
+      500    0.014    0.000    0.020    0.000 {built-in method builtins.__build_class__}
+      310    0.014    0.000    0.033    0.000 punch_actions.py:14(checkForActions)
+        1    0.014    0.014    0.014    0.014 {method 'read' of 'cv2.VideoCapture' objects}
+
+

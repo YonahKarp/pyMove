@@ -1,11 +1,9 @@
 
-from ssbb_controls import actionCnfg, actionKeys, directionKeys
+from controls.controlFactory import actionCnfg, actionKeys, directionKeys, actionsNames
 from Keyboard import keyboard
 import Mouse as mouse
 from threading import Timer
 import config as cnfg
-
-from ssbb_controls import actionCnfg, directionKeys, actionsNames
 
 
 

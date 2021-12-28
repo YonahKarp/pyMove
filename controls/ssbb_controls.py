@@ -1,4 +1,5 @@
 from Keyboard import keyboard
+from controls.Action import Action
 
 actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm', 'x', 'z',' ']
 directionKeys = ['left', 'right', 'up', 'down']
@@ -9,17 +10,6 @@ actionsNames = [
     'lHand up_left', 'lHand up_right'
 ]
 
-
-class Action():
-    def __init__(self, key, sustain=False, multi=False, otherKey=None, keepDirection=None):
-        self.key = key
-        self.sustain = sustain
-        self.multi = multi
-        self.otherKey = otherKey
-        self.keepDirection = keepDirection
-
-    def params(self):
-        return (self.key, self.sustain, self.multi, self.otherKey)
 
 
 actionCnfg = {
