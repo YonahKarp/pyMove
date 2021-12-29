@@ -1,7 +1,7 @@
 
 
-games = ['SSBB', 'PUNCH']
-GAME = games[1]
+games = ['SSBB', 'PUNCH', 'METROID']
+GAME = games[0]
 
 DEBUG = False
 SHOW = DEBUG
@@ -12,7 +12,7 @@ POINTER = False
 
 
 border = 200
-scale = .2
+scale = .3
 
 # Mouse move
 H = 1080
@@ -28,7 +28,13 @@ calibrating = False
 calibrated = False
 height = .3
 mid = .5
+
 span = 0
+torso = 0 
+h_span = 0
+h_height = .7
+
+
 r_bicep = 0
 l_bicep = 0
 r_forearm =  0

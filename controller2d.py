@@ -106,11 +106,11 @@ def start():
             frame = frame.astype(np.float32) # for overlay clipping
             actions = pauseActions(frame, joints)  if config.PAUSED \
                 else pointerActions(frame, joints, hand) if config.POINTER \
-                else checkForActions(frame, joints) 
+                else checkForActions(frame, joints, hand) 
 
             
-            # if not config.DEBUG: 
-            controller.handlePresses(actions)
+            if not config.DEBUG: 
+                controller.handlePresses(actions)
         else:
             controller.handlePresses([])
         # print(time.time() - start)

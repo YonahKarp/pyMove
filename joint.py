@@ -74,24 +74,6 @@ class Joint2D():
     def isBehind(self, other, offset=0): return self.z < other.z - offset
     def isInFrontOf(self, other, offset=0): return self.z > other.z + offset
 
-# Hand Gestures
-    @staticmethod
-    def isTrigger(hand):
-        wrist, thumb_mid,  thumb, pointer_mid, pointer, middle_mid, \
-        middle, index_mid, index, pinky_mid, pinky = hand or [noneJoint] * 11
-
-
-        if(
-            wrist.distXYZ(middle) < wrist.distXYZ(middle_mid)*1.25
-            or wrist.distXYZ(index) < wrist.distXYZ(index_mid)*1.25
-            # (middle.isBelow(wrist) and index.isBelow(wrist) )#and pinky.isAbove(wrist) and pointer.isAbove(wrist))
-          ):
-            return True
-        
-        return False
-
-
-
 
 
 # Utils

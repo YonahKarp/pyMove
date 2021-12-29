@@ -59,8 +59,8 @@ def maskRight(frame, multiplyer=1):
 def maskUp(frame):
     frame[0:maskW, :, 1] = frame[0:maskW, :, 1] + uMask 
     return np.clip(frame, 0, 255)
-def maskDown(frame):
-    frame[h-maskW:h, :, 1] = frame[h-maskW:h, :, 1] + dMask 
+def maskDown(frame, color=1):
+    frame[h-maskW:h, :, color] = frame[h-maskW:h, :, color] + dMask 
     return np.clip(frame, 0, 255)
 
 # Attack Masks
@@ -121,7 +121,7 @@ if config.SHOW < 2 :
     def maskLeft(frame, multiplyer=1): pass
     def maskRight(frame, multiplyer=1): pass
     def maskUp(frame): pass
-    def maskDown(frame): pass
+    def maskDown(frame, color=1): pass
     def maskRight_AtkR(frame): pass
     def maskRight_AtkL(frame): pass
     def maskRight_AtkU(frame): pass
@@ -132,6 +132,7 @@ if config.SHOW < 2 :
     def maskLeft_AtkD(frame): pass
     def maskRight_jab(frame): pass
     def maskLeft_jab(frame): pass
+    def maskPointer(frame, coords, color=1): pass
 
 
 

@@ -18,7 +18,10 @@ def mouseEvent(type, posx, posy):
     CGEventPost(kCGHIDEventTap, theEvent)
 
 def move(posx,posy):
-    posx = config.W - posx*config.W
+    offset = .25
+    o_posx = posx + offset
+    flipped = config.W - (o_posx)*config.W
+    posx = flipped*(1+2*offset)
     posy = config.H*posy 
     mouseEvent(kCGEventMouseMoved, posx,posy)
 

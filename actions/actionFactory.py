@@ -5,6 +5,8 @@ if config.GAME == "SSBB":
     import actions.ssbb_actions as actions
 if config.GAME == "PUNCH":
     import actions.punch_actions as actions
+if config.GAME == "METROID":
+    import actions.metroid_actions as actions
 
 
 # Interface

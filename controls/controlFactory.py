@@ -7,6 +7,9 @@ if config.GAME == "SSBB":
 if config.GAME == "PUNCH":
     import controls.punch_controls as controls
 
+if config.GAME == "METROID":
+    import controls.metroid_controls as controls
+
 # Interface
 actionKeys = []
 directionKeys = []

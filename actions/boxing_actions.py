@@ -34,12 +34,6 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
         actions.append('right')
 
 
-# vertical Movement
-
-    if(l_shoulder.y > (config.height + .1)
-      and r_shoulder.y > (config.height + .1)):
-        maskDown(frame)
-        actions.append('duck')
 
 # Dual Hand
 
@@ -62,9 +56,7 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
 
 # Right Hand
 
-    elif((r_elbow.isLeftOf(r_shoulder, -span*.3) or r_wrist.isBelow(r_hip))
-      and r_wrist.isBelow(r_elbow)
-      and r_wrist.isLeftOf(r_hip)):
+    elif(r_wrist.isRightOf(r_shoulder, config.r_arm*.65)):
         maskRight_AtkD(frame)
         actions.append('rhook')
 
@@ -77,17 +69,11 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
         maskRight_jab(frame)
         actions.append('rjab')
 
-    elif(r_wrist.isLeftOf(r_shoulder, span*.9)
-      and r_wrist.isAbove(r_hip) and r_wrist.isBelow(r_shoulder)):
-        maskRight_AtkL(frame)
-        actions.append('star punch')
 
 
 # Left Hand
 
-    elif((l_elbow.isRightOf(l_shoulder, -span*.3) or l_wrist.isBelow(l_hip))
-      and l_wrist.isBelow(l_elbow)
-      and l_wrist.isRightOf(l_hip)):
+    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.65)):
         maskLeft_AtkD(frame)
         actions.append('lhook')
 
@@ -147,6 +133,9 @@ def pointerActions(frame, joints: 'list[Joint2D]', hand: 'list[Joint2D]' = None)
     r_arm = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
     l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
+
+    actions = []
+
     if(shouldPause(r_wrist, l_wrist, head, span)):
         config.PAUSED = True
         config.POINTER = False
@@ -158,9 +147,11 @@ def pointerActions(frame, joints: 'list[Joint2D]', hand: 'list[Joint2D]' = None)
         putText(frame, 'calibrate', (.3, .5), CYAN)
         calibrate(joints)
 
+    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7)):
+        actions.append('press ab')
+
     coords = (r_wrist.x, r_wrist.y)
 
-    actions = []
 
     shouldTrigger = isTrigger(hand)
     color = 0 if shouldTrigger else 1
@@ -171,7 +162,7 @@ def pointerActions(frame, joints: 'list[Joint2D]', hand: 'list[Joint2D]' = None)
         actions.append('move mouse')
 
     if(shouldTrigger):
-        actions.append('star punch')
+        actions.append('press a')
 
     return actions
 
