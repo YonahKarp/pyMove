@@ -90,6 +90,18 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
 
 # Right Hand
 
+    elif(r_wrist.isAbove(r_shoulder, span*.1) and r_elbow.isAbove(r_shoulder, span*.1) 
+      and r_wrist.isCloseToY(r_elbow, config.span*.4)
+      and r_wrist.isLeftOf(r_elbow, config.r_forearm*.7)
+      and r_wrist.isLeftOf(head, -config.span*.2)
+    #   or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))
+      ):
+        # maskRight_AtkU(frame)
+        maskRight_jab(frame)
+        actions.append('rHand uptilt')
+        actions.append('up')
+
+
     elif(r_wrist.isAbove(head, span*.25) 
     #   or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))
       ):
@@ -105,7 +117,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         actions.append('rHand left')
 
     elif( r_wrist.isBetweenX(r_shoulder, l_shoulder) 
-      and r_shoulder.isBelow(l_shoulder, span*.15) and l_shoulder.y  > (config.height + span*.1)
+      and r_shoulder.isBelow(l_shoulder, span*.1) and l_shoulder.y  > (config.height + span*.1)
       and r_wrist.isBelow(r_hip, span*.15) and r_wrist.isBelow(l_hip, span*.15)
     #     or 
         # (r_wrist.isRightOf(r_shoulder, r_arm*.55) and r_wrist.isBelow(r_shoulder, span*1.1)
@@ -123,6 +135,16 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     #     actions.append('rHand jab')
 
 # Left Hand
+
+    elif(l_wrist.isAbove(l_shoulder, span*.1) and l_elbow.isAbove(l_shoulder, span*.1) 
+      and l_wrist.isCloseToY(l_elbow, config.span*.35)
+      and l_wrist.isRightOf(l_elbow, config.l_forearm*.7)
+      and l_wrist.isRightOf(head, -config.span*.2) and l_wrist.isBelow(head, -config.span*.1)
+    #   or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))
+      ):
+        # maskRight_AtkU(frame)
+        maskLeft_jab(frame)
+        actions.append('lHand jab')
     
     elif(l_wrist.isAbove(head, span*.25)
     #   or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))

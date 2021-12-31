@@ -25,11 +25,11 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
     l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
 # Lateral Movement
-    if(l_shoulder.midPointX(r_shoulder) > config.mid + .15*span):
+    if(l_shoulder.midPointX(r_shoulder) > config.mid + .125*span):
         maskLeft(frame)
         actions.append('left')
 
-    elif(l_shoulder.midPointX(r_shoulder) < config.mid - .15*span):
+    elif(l_shoulder.midPointX(r_shoulder) < config.mid - .125*span):
         maskRight(frame)
         actions.append('right')
 

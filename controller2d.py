@@ -1,7 +1,6 @@
 from profiler import profile
 import cv2
 import mediapipe as mp
-import sys
 
 import time
 import numpy as np
@@ -51,7 +50,7 @@ def start():
 
         frameNum += 1
             
-        print(cap.hasNew)
+        # print(cap.hasNew)
         frame = cap.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -84,7 +83,7 @@ def start():
 
 
     # Draw joints
-        if (config.SHOW > 0 and frameNum % showFrames == 0):
+        if (config.DEBUG and frameNum % showFrames == 0):
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             if(landmarks):
                 landmark_utils.hideUnwanted(landmarks.landmark, landmark_list)
@@ -119,12 +118,11 @@ def start():
         if config.PAUSED:
             putText(frame,'pause',(.4,.5), GREEN)
 
-        if (config.SHOW > 0 and frameNum % showFrames == 0):
+        if (config.DEBUG and frameNum % showFrames == 0):
             frame = np.clip(frame,0,255).astype(np.uint8) # undo from overlay clipping avoidance
-            if config.DEBUG:
-                frame = cv2.resize(frame, (int(frame.shape[1]*(1/config.scale)), int(frame.shape[0]*(1/config.scale))), interpolation = cv2.INTER_NEAREST)
+            frame = cv2.resize(frame, (int(frame.shape[1]*(1/config.scale)), int(frame.shape[0]*(1/config.scale))), interpolation = cv2.INTER_NEAREST)
             cv2.imshow('frame', frame)
-        elif not config.SHOW:
+        elif not config.DEBUG:
             if(config.calibrating or config.PAUSED):
 
                 frame = np.clip(frame,0,255).astype(np.uint8) # undo from overlay clipping avoidance
@@ -146,7 +144,7 @@ def start():
             
 
 
-        if config.SHOW and (cv2.waitKey(1) & 0xFF == ord('p')):
+        if config.DEBUG and (cv2.waitKey(1) & 0xFF == ord('p')):
             break
 
 
@@ -157,8 +155,6 @@ def start():
 
 
 if __name__ == "__main__":
-    if(len(sys.argv) > 1):
-        config.SHOW = config.DEBUG = int(sys.argv[1])
 
     cv2.destroyAllWindows()
 

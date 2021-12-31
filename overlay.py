@@ -116,7 +116,7 @@ def maskPointer(frame, coords, color=1):
     
 
 # Don't show masks
-if config.SHOW < 2 :
+if not config.DEBUG:
     def putText(frame, text, coords, color, scale = 2): pass
     def maskLeft(frame, multiplyer=1): pass
     def maskRight(frame, multiplyer=1): pass

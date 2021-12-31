@@ -1,10 +1,13 @@
-
+import sys
 
 games = ['SSBB', 'PUNCH', 'METROID', "BOXING"]
-GAME = games[0]
+GAME = games[0] 
 
 DEBUG = False
-SHOW = DEBUG
+
+if(len(sys.argv) > 1):
+    DEBUG = bool(sys.argv[1])
+
 
 PAUSED = True
 POINTER = False

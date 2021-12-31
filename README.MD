@@ -1,10 +1,11 @@
 # Pymovement controller
 
-A kinect like movement system using media-pipe
+A kinect like movement system for controlling games using webcam and body motion
 
-Currently conifgured for 3 dolphin games
-- Super Smash Brothers Brawl
+uses media-pipe to get pose
+
+Currently conifgured (to varying degrees of usability) for 3 dolphin games
+- Super Smash Brothers Brawl (works best)
 - Wii Punch Out
 - Metroid Trilogy
-
 

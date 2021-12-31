@@ -6,6 +6,7 @@
     "configurations": [
 
 
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -26,7 +27,7 @@
             "request": "launch",
             "program": "controller2d.py",
             "console": "integratedTerminal",
-            "args": ["2"]
+            "args": ["True"]
         },
         {
             "name": "Python: Current File in current Directory",

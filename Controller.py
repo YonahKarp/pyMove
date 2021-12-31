@@ -29,7 +29,12 @@ class Controller():
             if action in actions:
                 
                 if(sustain):
-                    keyboard.KeyDown(key)
+                     # first key
+                    if(config.delay and not self.actionCheck[action]):
+                        Timer(config.delay, self.pressKey, (key, action)).start()
+                        self.actionCheck[action] = True
+                    else:           
+                        keyboard.KeyDown(key)
                     keyCheck[key] = True
 
                     if(multi and not keyCheck[otherKey]):
@@ -78,8 +83,10 @@ class Controller():
                 keyboard.KeyUp(otherKey)
         
 
-    def pressKey(self, key):
+    def pressKey(self, key, action = None):
         keyboard.KeyDown(key)
+        if action:
+            self.actionCheck[action] = False
 
     def cancelPress(self, key, action = None):
         keyboard.KeyUp(key)

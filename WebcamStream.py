@@ -1,7 +1,7 @@
 # import the necessary packages
 from profiler import profile
 
-from threading import Thread
+from threading import Thread, Condition
 import cv2
 import time
 
@@ -21,24 +21,33 @@ class WebcamStream:
         (self.grabbed, self.frame) = self.stream.read()
         self.hasNew = True
 
+        self.condition = Condition()
+
     def start(self):
+
         Thread(target=self.update, args=()).start()
         return self
 
     # @profile()
-    def update(self):
+    def update(self,):
         while True:
             if self.stopped: return
+            
             (self.grabbed, self.frame) = self.stream.read()
+            with self.condition:
+                self.hasNew = True
+                self.condition.notify_all()
 
             # frame = frame[:, self.border:frame.shape[1]-self.border]
             # self.frame = cv2.resize(frame, (int(frame.shape[1]*self.scale), int(frame.shape[0]*self.scale)), interpolation = cv2.INTER_AREA)
-            # self.hasNew = True
+            
 
     def read(self):
-        # while not self.hasNew:
-        #     time.sleep(.001)
-        # self.hasNew = False
+        if not self.hasNew:
+            with self.condition:
+                self.condition.wait()
+
+        self.hasNew = False
         return self.frame
 
     def stop(self):
