@@ -57,7 +57,7 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
 # Right Hand
 
     elif(r_wrist.isRightOf(r_shoulder, config.r_arm*.65)):
-        maskRight_AtkD(frame)
+        maskRight_AtkR(frame)
         actions.append('rhook')
 
     elif(
@@ -74,7 +74,7 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
 # Left Hand
 
     elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.65)):
-        maskLeft_AtkD(frame)
+        maskLeft_AtkL(frame)
         actions.append('lhook')
 
     elif((l_elbow.isCloseToY(l_shoulder, config.l_bicep*.35) and l_wrist.isAbove(l_shoulder))

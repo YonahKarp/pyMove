@@ -1,5 +1,7 @@
+from profiler import profile
 import cv2
 import mediapipe as mp
+import sys
 
 import time
 import numpy as np
@@ -26,13 +28,9 @@ mp_drawing = mp.solutions.drawing_utils
 solution = mp.solutions.pose.Pose if config.GAME in ['SSBB'] \
             else mp.solutions.holistic.Holistic
 
-
-
-font = cv2.FONT_HERSHEY_SIMPLEX
-
 def start():
 
-    cap = WebcamStream(border=config.border, scale=config.scale).start()
+    cap = WebcamStream(border=config.border).start()
 
     joints =    [Joint2D(name, -1,-1) for name in jointNames]
     hand =      [Joint2D(name, -1,-1) for name in hand_names]
@@ -42,8 +40,8 @@ def start():
     destroyWindow = False
 
     pose = solution(upper_body_only=True,
-        min_detection_confidence=0.8,
-        min_tracking_confidence=0.7)
+        min_detection_confidence=0.3,
+        min_tracking_confidence=0.5)
 
     # start = time.time()
 
@@ -53,7 +51,7 @@ def start():
 
         frameNum += 1
             
-        # print(cap.hasNew)
+        print(cap.hasNew)
         frame = cap.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -75,9 +73,8 @@ def start():
             for i, joint in enumerate(tempJoints):
                 joints[i].update(joint.x,joint.y)
 
-            # TO:DO check if Z is better in holistic
-            if(config.calibrated):
-                Joint2D.calcZ(landmarks.landmark, joints)
+            # if(config.calibrated):
+            #     Joint2D.calcZ(landmarks.landmark, joints)
 
         if(r_hand_landmarks):
             tempHand = [r_hand_landmarks.landmark[i] for i in hand_list]
@@ -107,10 +104,10 @@ def start():
             actions = pauseActions(frame, joints)  if config.PAUSED \
                 else pointerActions(frame, joints, hand) if config.POINTER \
                 else checkForActions(frame, joints, hand) 
-
+                
             
-            if not config.DEBUG: 
-                controller.handlePresses(actions)
+            # if not config.DEBUG: 
+            controller.handlePresses(actions)
         else:
             controller.handlePresses([])
         # print(time.time() - start)
@@ -160,10 +157,13 @@ def start():
 
 
 if __name__ == "__main__":
+    if(len(sys.argv) > 1):
+        config.SHOW = config.DEBUG = int(sys.argv[1])
+
     cv2.destroyAllWindows()
 
     for key in actionKeys:
-        keyboard.KeyUp(key)
+        keyboard.KeyUp(key, True)
 
     start()
 

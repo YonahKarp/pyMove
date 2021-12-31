@@ -14,7 +14,7 @@ from controls.controlFactory import actionKeys, actionsNames
 
 from Controller import controller
 
-
+DISABLE_MOVEMENT = True
 def checkForActions(frame, joints: 'list[Joint2D]', hand=None):
     actions = []
 
@@ -27,35 +27,36 @@ def checkForActions(frame, joints: 'list[Joint2D]', hand=None):
     r_arm = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
     l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
-# Lateral Movement
-    if(l_shoulder.midPointX(r_shoulder) > config.mid + .35*span):
-        maskLeft(frame)
-        actions.append('left')
+    if(not DISABLE_MOVEMENT):
+    # Lateral Movement
+        if(l_shoulder.midPointX(r_shoulder) > config.mid + .35*span):
+            maskLeft(frame)
+            actions.append('left')
 
-    elif(l_shoulder.midPointX(r_shoulder) < config.mid - .35*span):
-        maskRight(frame)
-        actions.append('right')
+        elif(l_shoulder.midPointX(r_shoulder) < config.mid - .35*span):
+            maskRight(frame)
+            actions.append('right')
 
-# z- movement
-    if(h_span < config.h_span*.85 and torso < config.torso*.85):
-        maskDown(frame)
-        actions.append('back')
+    # z- movement
+        if(h_span < config.h_span*.9 and torso < config.torso*.9):
+            maskDown(frame,0)
+            actions.append('back')
 
-    elif(span > config.span*1.1 and torso > config.torso*1.1):
-        maskDown(frame, 2)
-        actions.append('fwd')
+        elif(span > config.span*1.08 and torso > config.torso*1.08):
+            maskDown(frame, 2)
+            actions.append('fwd')
 
 
 
 # vertical Movement
 
-    if(l_shoulder.y < (config.height - .2*span) and r_shoulder.y < (config.height - .2*span)
+    if(head.y < (config.height - .4*span)
         and l_hip.y < (config.h_height - .2*span) and r_hip.y < (config.h_height - .2*span)):
         maskUp(frame)
         actions.append('jump')
 
-    if(l_shoulder.y     > (config.height + .1)  
-      and r_shoulder.y  > (config.height + .1)):
+    # TO:DO change modes in config?
+    if(head.y     > (config.height + .2)):
         maskDown(frame)
         actions.append('morph')
 
@@ -63,9 +64,11 @@ def checkForActions(frame, joints: 'list[Joint2D]', hand=None):
 # Dual Hand
 
 
-    coords = (r_wrist.x, r_wrist.y)
+    coords = [r_wrist.x, r_wrist.y]
+    # handActions.get_orientation2(hand, frame)
     isTrigger = handActions.isTrigger(hand)
-    color = 0 if isTrigger else 1
+    isFist = handActions.isFist(hand)
+    color = 2 if isFist else  0 if isTrigger else 1
 
 
     #  PAUSE
@@ -82,11 +85,15 @@ def checkForActions(frame, joints: 'list[Joint2D]', hand=None):
     
     if(coords[0] > -1 and coords[1] > -1):
         maskPointer(frame, coords, color)
+        coords[0] = coords[0] + (.5 - l_shoulder.midPointX(r_shoulder))
         config.mouseLocation = coords
         actions.append('move mouse')
 
     if(isTrigger):
         actions.append('fire')
+
+    if(isFist):
+        actions.append('missle')
 
     
 
@@ -99,7 +106,8 @@ def checkForActions(frame, joints: 'list[Joint2D]', hand=None):
 # Left Hand
     
 
-    if(l_wrist.isCloseTo(r_wrist, span*.5) or l_wrist.isCloseTo(r_elbow, span*.5)):
+    if(l_wrist.isCloseTo(r_wrist, span*.5) or l_wrist.isCloseTo(r_elbow, span*.5)
+        or l_wrist.isRightOf(l_hip)):
         maskLeft_AtkR(frame)
         actions.append('lock')
 
@@ -112,33 +120,7 @@ def checkForActions(frame, joints: 'list[Joint2D]', hand=None):
         maskLeft_jab(frame)
         actions.append('visor')
 
-    # elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7)):
-    #     maskLeft_AtkL(frame)
-    #     actions.append('map')
 
-    elif(l_wrist.isBetweenX(r_shoulder, l_shoulder) 
-      and l_shoulder.isBelow(r_shoulder, span*.15) and r_shoulder.y  > (config.height + span*.2)
-      and l_wrist.isBelow(r_hip, span*.15) and l_wrist.isBelow(l_hip, span*.15)
-    ):
-        maskLeft_AtkD(frame)
-        actions.append('missle')
-
-
-
-# BLOCK
-    # elif(
-    #     (r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(
-    #         l_hip, span) and l_wrist.isAbove(l_hip, span))
-    #     or (r_wrist.isCloseToX(l_wrist, span*.55) and r_wrist.isCloseToY(r_shoulder, span*.35) and l_wrist.isCloseToY(l_shoulder, span*.35) and r_wrist.isCloseToY(l_wrist, span*.4))
-    #     or (r_wrist.isCloseToX(l_wrist, span*.55) and r_wrist.isAbove(r_hip, span) and l_wrist.isAbove(l_hip, span))
-    #     or ((r_wrist.isCloseTo(r_shoulder, span*.3) or r_wrist.isCloseTo(l_shoulder, span*.3))
-    #         and (l_wrist.isCloseTo(l_shoulder, span*.3) or l_wrist.isCloseTo(r_shoulder, span*.3)))
-    # ):
-    #     putText(frame, 'morph', (.4, .5), CYAN)
-    #     actions.append('morph')
-
-
-        # TO:DO change modes in config?
 
     if config.DEBUG == 1:
         return []
@@ -169,7 +151,7 @@ def calibrate(joints: 'list[Joint2D]'):
 
     head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip, = joints
 
-    config.height = l_shoulder.midPointY(r_shoulder)
+    config.height = head.y
     config.mid = l_shoulder.midPointX(r_shoulder)
     config.span = l_shoulder.dist(r_shoulder)
     config.h_span = l_hip.dist(r_hip)

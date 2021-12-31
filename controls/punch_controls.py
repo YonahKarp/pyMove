@@ -1,4 +1,3 @@
-from Keyboard import keyboard
 from controls.Action import Action
 
 actionKeys =['left', 'right', 'up', 'down', '1', '2', 'x']
@@ -23,7 +22,3 @@ actionCnfg = {
     'ljab':  Action('1', True, True, 'right'),
     'star punch':   Action('x'),
 }
-
-if __name__ == "__main__":
-    for key in actionKeys:
-        keyboard.KeyUp(key)

@@ -1,6 +1,6 @@
 
 
-games = ['SSBB', 'PUNCH', 'METROID']
+games = ['SSBB', 'PUNCH', 'METROID', "BOXING"]
 GAME = games[0]
 
 DEBUG = False
@@ -11,14 +11,14 @@ POINTER = False
 
 
 
-border = 200
-scale = .3
+border = 0
+scale = 1/1.5
 
 # Mouse move
 H = 1080
 W = 1600
 h = int(720*scale)
-w = int(880*scale)
+w = int(960*scale)
 
 mouseLocation = (0,0)
 
@@ -41,7 +41,6 @@ r_forearm =  0
 l_forearm =  0
 r_arm = 0
 l_arm = 0
-
 
 
 

@@ -14,6 +14,7 @@ from Controller import controller
 def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     actions = []
     lateral_movement = ''
+    movement_hard = False
 
 
     head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip = joints
@@ -27,6 +28,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         maskLeft(frame, 1.5)
         actions.append('hard left')
         lateral_movement = '_left'
+        movement_hard = True
 
     elif(l_shoulder.midPointX(r_shoulder) > config.mid + .35*span):
         maskLeft(frame)
@@ -37,6 +39,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         maskRight(frame, 1.5)
         actions.append('hard right')
         lateral_movement = '_right'
+        movement_hard = True
     
     elif(l_shoulder.midPointX(r_shoulder)  < config.mid - .35*span):
         maskRight(frame)
@@ -51,8 +54,8 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         maskUp(frame)
         actions.append('jump')
 
-    if(l_shoulder.y     > (config.height + .1)  
-      and r_shoulder.y  > (config.height + .1)):
+    if(l_shoulder.y     > (config.height + .15)  
+      and r_shoulder.y  > (config.height + .15)):
         maskDown(frame)
         actions.append('duck')
 
@@ -68,12 +71,11 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
 
 
     # BLOCK
-    elif(
-        (r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(l_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8) )
-        or (r_wrist.isCloseToX(l_wrist, span*.55) and r_wrist.isCloseToY(r_shoulder, span*.4) and l_wrist.isCloseToY(l_wrist, span*.4) and r_wrist.isCloseToY(l_wrist, span*.4) )
-        or (r_wrist.isCloseToX(l_wrist, span*.55) and r_wrist.isAbove(r_hip, span*.8) and l_wrist.isAbove(l_hip, span*.8))
-        or ((r_wrist.isCloseTo(r_shoulder, span*.3) or r_wrist.isCloseTo(l_shoulder, span*.3))
-          and (l_wrist.isCloseTo(l_shoulder, span*.3) or l_wrist.isCloseTo(r_shoulder, span*.3)))
+    elif((r_wrist.isCloseToX(l_wrist, span*.6) and r_wrist.isCloseToY(l_wrist, span*.3) and r_wrist.isCloseToY(r_shoulder, span*.4) and l_wrist.isCloseToY(l_shoulder, span*.4)  )
+        or (r_wrist.isCloseToX(l_wrist, span*.6) and r_wrist.isCloseToY(l_wrist, span*.3) and r_wrist.isAbove(r_hip, span*.9) and l_wrist.isAbove(l_hip, span*.9))
+        or (r_wrist.isCloseTo(r_shoulder, span*.3) and l_wrist.isCloseTo(r_shoulder, span*.3))
+        or (l_wrist.isCloseTo(l_shoulder, span*.3) and r_wrist.isCloseTo(l_shoulder, span*.3))
+        # or (r_wrist.isLeftOf(l_wrist) and r_wrist.isAbove(r_hip, span*.9) and l_wrist.isAbove(l_hip, span*.9) )
       ):
         putText(frame,'block',(.4,.5), CYAN)
         actions.append('block')
@@ -103,7 +105,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         actions.append('rHand left')
 
     elif( r_wrist.isBetweenX(r_shoulder, l_shoulder) 
-      and r_shoulder.isBelow(l_shoulder, span*.15) and l_shoulder.y  > (config.height + span*.2)
+      and r_shoulder.isBelow(l_shoulder, span*.15) and l_shoulder.y  > (config.height + span*.1)
       and r_wrist.isBelow(r_hip, span*.15) and r_wrist.isBelow(l_hip, span*.15)
     #     or 
         # (r_wrist.isRightOf(r_shoulder, r_arm*.55) and r_wrist.isBelow(r_shoulder, span*1.1)
@@ -128,7 +130,8 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         maskLeft_AtkU(frame)
         actions.append('lHand up' + lateral_movement)
 
-    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7)):
+
+    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7) and not movement_hard):
         maskLeft_AtkL(frame)
         actions.append('lHand left')
 

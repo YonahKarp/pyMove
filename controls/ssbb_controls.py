@@ -1,4 +1,3 @@
-from Keyboard import keyboard
 from controls.Action import Action
 
 actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm', 'x', 'z',' ']
@@ -13,8 +12,8 @@ actionsNames = [
 
 
 actionCnfg = {
-    'hard left':    Action('left', True),
-    'hard right':   Action('right', True),
+    'hard left':    Action('left', False),
+    'hard right':   Action('right', False),
     'left':         Action('left', True, True, 'm'),
     'right':        Action('right', True, True, 'm'),
     'jump':           Action('up', True),
@@ -27,14 +26,11 @@ actionCnfg = {
     'rHand down':   Action('s'),
     'lHand jab':    Action('z', True),
     'lHand right':  Action('z', False, True, 'right'),
-    'lHand up':     Action('z', False, True, 'up'),
+    'lHand up':     Action('z', False, True, 'up', delay=.01),
     'lHand left':   Action('z', False, True, 'left'),
     'lHand down':   Action('z', False, True, 'down'),
-    'lHand up_left':     Action('z', False, True, 'up', 'left'),
-    'lHand up_right':     Action('z', False, True, 'up', 'right'),
+    'lHand up_left':     Action('z', False, True, 'up', 'left', delay=.01),
+    'lHand up_right':     Action('z', False, True, 'up', 'right', delay=.01),
     'start':        Action(' '),
 }
 
-if __name__ == "__main__":
-    for key in actionKeys:
-        keyboard.KeyUp(key)

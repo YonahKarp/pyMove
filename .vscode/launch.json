@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -18,7 +19,14 @@
             "request": "launch",
             "program": "controller2d.py",
             "console": "integratedTerminal",
-            "justMyCode": false,
+        },
+        {
+            "name": "Python: controller 2D Debug",
+            "type": "python",
+            "request": "launch",
+            "program": "controller2d.py",
+            "console": "integratedTerminal",
+            "args": ["2"]
         },
         {
             "name": "Python: Current File in current Directory",

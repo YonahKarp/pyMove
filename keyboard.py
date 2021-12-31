@@ -8,9 +8,16 @@ from Quartz.CoreGraphics import CGEventCreateKeyboardEvent
 from Quartz.CoreGraphics import CGEventPost
 from Quartz.CoreGraphics import kCGHIDEventTap
 
+from controls.ssbb_controls import actionKeys
+
+
+
 #from Quartz.CoreGraphics import CFRelease # Python releases things automatically.
 
 class Keyboard():
+    def __init__(self):
+        self.keyPressed = dict(zip(actionKeys, [False]*len(actionKeys)))
+
     shiftChars = {
         '~': '`',
         '!': '1',
@@ -189,15 +196,17 @@ class Keyboard():
 
     def KeyDown(self, k):
         keyCode = self.toKeyCode(k)
-
         CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, keyCode, True))
+        self.keyPressed[k] = True
         time.sleep(0.00001)
 
 
-    def KeyUp(self, k):
+    def KeyUp(self, k, force=False):
+        if(not force and not self.keyPressed[k]):
+            return
         keyCode = self.toKeyCode(k)
-
         CGEventPost(kCGHIDEventTap, CGEventCreateKeyboardEvent(None, keyCode, False))
+        self.keyPressed[k] = False
         time.sleep(0.00001)
 
     def KeyPress(self, k):
@@ -217,3 +226,8 @@ class Keyboard():
             self.KeyUp(key)
 
 keyboard = Keyboard()
+
+
+if __name__ == "__main__":
+    for key in actionKeys:
+        keyboard.KeyUp(key, True)

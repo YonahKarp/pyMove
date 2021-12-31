@@ -38,6 +38,14 @@ class Controller():
 
                 else:
                     if(not self.actionCheck[action]):
+                        # first key
+                        if(config.delay):
+                            Timer(config.delay, self.pressKey, (key)).start()
+                        else:           
+                            keyboard.KeyDown(key)
+                        Timer(0.20-config.delay, self.cancelPress, (key, action)).start()
+
+                        # other key
                         if(multi and not keyCheck[otherKey]):
                             if otherKey in directionKeys:
                                 for k in directionKeys:
@@ -45,10 +53,9 @@ class Controller():
                                         keyboard.KeyUp(k)
 
                             keyboard.KeyDown(otherKey)
-                            Timer(0.25, self.cancelPress, (otherKey,)).start()
+                            Timer(0.20, self.cancelPress, (otherKey,)).start()
+
                         
-                        keyboard.KeyDown(key)
-                        Timer(0.25, self.cancelPress, (key, action)).start()
                         self.actionCheck[action] = True
 
                     keyCheck[key] = True
@@ -70,6 +77,9 @@ class Controller():
             if(multi and not keyCheck[otherKey]):
                 keyboard.KeyUp(otherKey)
         
+
+    def pressKey(self, key):
+        keyboard.KeyDown(key)
 
     def cancelPress(self, key, action = None):
         keyboard.KeyUp(key)
