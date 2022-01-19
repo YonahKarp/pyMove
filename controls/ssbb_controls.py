@@ -1,38 +1,40 @@
 from controls.Action import Action
+from DolphinControls import Stick, Button
 
-actionKeys =['left', 'right', 'up', 'down', 'q', 'd', 'w', 'a', 's','z', 'm', 'x', 'y', 'z',' ']
-directionKeys = ['left', 'right', 'up', 'down']
+actionKeys =[Stick.MAIN, Stick.C, Button.L, Button.Y, Button.A, Button.B,]
+directionKeys = [Stick.MAIN, Stick.C]
 actionsNames = [
-    'left', 'right', 'jump', 'duck', 'up', 'block', 'hard left', 'hard right', 'start',
+    'left', 'right', 'jump', 'duck', 'up', 'block', 
+    #  'hard left', 'hard right', 
     'rHand jab', 'rHand right', 'rHand up', 'rHand left', 'rHand down', 'rHand uptilt',
     'lHand jab', 'lHand right', 'lHand up', 'lHand left', 'lHand down', 
-    'lHand up_left', 'lHand up_right'
+    # 'lHand up_left', 'lHand up_right', 'start',
 ]
 
 
 
 actionCnfg = {
-    'hard left':    Action('left', False),
-    'hard right':   Action('right', False),
-    'left':         Action('left', True, True, 'm'),
-    'right':        Action('right', True, True, 'm'),
-    'jump':           Action('y', True),
-    'up':           Action('up', True),
-    'duck':         Action('down', True),
-    'block':        Action('q', True),
-    'rHand jab':    Action('x', True),
-    'rHand right':  Action('d'),
-    'rHand up':     Action('w'),
-    'rHand uptilt': Action('x', False, delay=.08), #in combination with sustain up and no tap jump
-    'rHand left':   Action('a'),
-    'rHand down':   Action('s'),
-    'lHand jab':    Action('z', True),
-    'lHand up':     Action('z', False, True, 'up', delay=.01),
-    'lHand left':   Action('z', False, True, 'left'),
-    'lHand right':  Action('z', False, True, 'right'),
-    'lHand down':   Action('z', False, True, 'down'),
-    'lHand up_left':     Action('z', False, True, 'up', 'left', delay=.01),
-    'lHand up_right':     Action('z', False, True, 'up', 'right', delay=.01),
-    'start':        Action(' '),
+    # 'hard left':    Action('left', False),
+    # 'hard right':   Action('right', False),
+    'left':         Action(Stick.MAIN, True, isStick=True),
+    'right':        Action(Stick.MAIN, True, isStick=True),
+    'jump':           Action(Button.Y, True),
+    'up':           Action(Stick.MAIN, True, isStick=True),
+    'duck':         Action(Stick.MAIN, True, isStick=True),
+    'block':        Action(Button.L, True),
+    'rHand jab':    Action(Button.A, True),
+    'rHand right':  Action(Stick.C, isStick=True),
+    'rHand up':     Action(Stick.C, isStick=True),
+    'rHand uptilt': Action(Button.A, False, delay=.08), #in combination with sustain up and no tap jump
+    'rHand left':   Action(Stick.C, isStick=True),
+    'rHand down':   Action(Stick.C, isStick=True),
+    'lHand jab':    Action(Button.B, True),
+    'lHand up':     Action(Stick.MAIN, False, True, Button.B, isStick=True),
+    'lHand left':   Action(Stick.MAIN, False, True, Button.B, isStick=True),
+    'lHand right':  Action(Stick.MAIN, False, True, Button.B, isStick=True),
+    'lHand down':   Action(Stick.MAIN, False, True, Button.B, isStick=True),
+    # 'lHand up_left':     Action(Stick.MAIN, False, True, 'B', 'left', delay=.01),
+    # 'lHand up_right':     Action(Stick.MAIN, False, True, 'B', 'right', delay=.01),
+    # 'start':        Action(Button.START)
 }
 

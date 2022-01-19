@@ -1,6 +1,8 @@
 from controls.Action import Action
+from DolphinControls import Button
 
-actionKeys =['left', 'right', 'up', 'down', '1', '2', 'x']
+
+actionKeys =[Button.D_UP, Button.D_DOWN, Button.D_LEFT, Button.D_RIGHT, Button.X, Button.Y, Button.A]
 directionKeys = ['left', 'right', 'up', 'down']
 actionsNames = [
     'left', 'right', 'block', 'duck',
@@ -12,13 +14,13 @@ actionsNames = [
 
 # key, sustain, multi, otherKey, keepDirection
 actionCnfg = {
-    'left':         Action('up', True),
-    'right':        Action('down', True),
-    'block':           Action('right', True),
-    'duck':         Action('left', True),
-    'rhook':    Action('2', True),
-    'lhook':    Action('1', True),
-    'rjab':     Action('2', True, True, 'right'),
-    'ljab':  Action('1', True, True, 'right'),
-    'star punch':   Action('x'),
+    'left':         Action(Button.D_UP, True),
+    'right':        Action(Button.D_DOWN, True),
+    'block':           Action(Button.D_RIGHT, True),
+    'duck':         Action(Button.D_LEFT, True),
+    'rhook':    Action(Button.Y, True),
+    'lhook':    Action(Button.X, True),
+    'rjab':     Action(Button.Y, True, True, Button.D_RIGHT),
+    'ljab':  Action(Button.X, True, True, Button.D_RIGHT),
+    'star punch':   Action(Button.A),
 }

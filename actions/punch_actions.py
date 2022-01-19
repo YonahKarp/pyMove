@@ -2,17 +2,17 @@ from joint import Joint2D, noneJoint
 import config
 
 from actions.base_actions import *
-from actions.hand_actions import isTrigger
 
 from overlay import maskPointer, maskRight_jab, maskLeft_jab, putText, \
     maskUp, maskDown, maskLeft, maskRight, \
     maskLeft_AtkD, maskLeft_AtkL, maskLeft_AtkR, maskLeft_AtkU, \
     maskRight_AtkD, maskRight_AtkL, maskRight_AtkR, maskRight_AtkU
 from constants import *
-from Keyboard import keyboard
+# from Keyboard import keyboard
+from DolphinControls import dolphinControls
 from controls.controlFactory import actionKeys, actionsNames
 
-from Controller import controller
+from PipeController import controller
 
 
 def checkForActions(frame, joints: 'list[Joint2D]', _=None):
@@ -24,22 +24,7 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
     r_arm = r_shoulder.dist(r_elbow) + r_elbow.dist(r_wrist)
     l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
-# Lateral Movement
-    if(l_shoulder.midPointX(r_shoulder) > config.mid + .125*span):
-        maskLeft(frame)
-        actions.append('left')
 
-    elif(l_shoulder.midPointX(r_shoulder) < config.mid - .125*span):
-        maskRight(frame)
-        actions.append('right')
-
-
-# vertical Movement
-
-    if(l_shoulder.y > (config.height + .1)
-      and r_shoulder.y > (config.height + .1)):
-        maskDown(frame)
-        actions.append('duck')
 
 # Dual Hand
 
@@ -69,18 +54,18 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
         actions.append('rhook')
 
     elif(
-        (r_elbow.isCloseToY(r_shoulder, config.r_bicep*.35)
-        and r_wrist.isAbove(r_shoulder))
-        or (r_wrist.isAbove(r_shoulder))
+        (r_elbow.isCloseToY(r_shoulder, config.r_bicep*.35) and r_wrist.isAbove(r_shoulder, -span*.3))
+        or (r_wrist.isAbove(r_shoulder, -span*.3))
         #    or r_wrist.isCloseTo(r_shoulder, span*.3)
     ):
         maskRight_jab(frame)
         actions.append('rjab')
 
-    elif(r_wrist.isLeftOf(r_shoulder, span*.9)
-      and r_wrist.isAbove(r_hip) and r_wrist.isBelow(r_shoulder)):
-        maskRight_AtkL(frame)
+    elif(r_wrist.isRightOf(r_shoulder, config.r_arm*.7)):
+        maskRight_AtkR(frame)
         actions.append('star punch')
+    
+ 
 
 
 # Left Hand
@@ -91,13 +76,43 @@ def checkForActions(frame, joints: 'list[Joint2D]', _=None):
         maskLeft_AtkD(frame)
         actions.append('lhook')
 
-    elif((l_elbow.isCloseToY(l_shoulder, config.l_bicep*.35) and l_wrist.isAbove(l_shoulder))
-         or (l_wrist.isAbove(l_shoulder))
+    elif((l_elbow.isCloseToY(l_shoulder, config.l_bicep*.35) and l_wrist.isAbove(l_shoulder, -span*.3))
+         or (l_wrist.isAbove(l_shoulder, -span*.3))
          #   or l_wrist.isCloseTo(l_shoulder, span*.3)
 
          ):
         maskLeft_jab(frame)
         actions.append('ljab')
+
+       # Lateral Movement
+    # elif(l_shoulder.midPointX(r_shoulder) > config.mid + .125*span
+    #   and l_shoulder.isBelow(r_shoulder, span*.05)):
+    #     maskLeft(frame)
+    #     actions.append('left')
+
+    # elif(l_shoulder.midPointX(r_shoulder) < config.mid - .125*span
+    #   and r_shoulder.isBelow(l_shoulder, span*.05)):
+    #     maskRight(frame)
+    #     actions.append('right')
+
+    elif(l_shoulder.x  > config.l_shoulderX + .125*span
+      and r_shoulder.x > config.r_shoulderX + .125*span
+      and l_shoulder.isBelow(r_shoulder, span*.05)):
+        maskLeft(frame)
+        actions.append('left')
+
+    elif(l_shoulder.x  < config.l_shoulderX - .125*span
+      and r_shoulder.x < config.r_shoulderX - .125*span
+      and r_shoulder.isBelow(l_shoulder, span*.05)):
+        maskRight(frame)
+        actions.append('right')
+
+# vertical Movement
+
+    elif(l_shoulder.y > (config.height + .1)
+      and r_shoulder.y > (config.height + .1)):
+        maskDown(frame)
+        actions.append('duck')
 
 # BLOCK
     elif(
@@ -162,7 +177,9 @@ def pointerActions(frame, joints: 'list[Joint2D]', hand: 'list[Joint2D]' = None)
 
     actions = []
 
-    shouldTrigger = isTrigger(hand)
+    shouldTrigger = l_wrist.isLeftOf(l_shoulder, config.l_arm*.7) 
+    
+    #isTrigger(hand)
     color = 0 if shouldTrigger else 1
 
     if(coords[0] > -1 and coords[1] > -1):
@@ -182,6 +199,9 @@ def calibrate(joints: 'list[Joint2D]'):
 
     config.height = l_shoulder.midPointY(r_shoulder)
     config.mid = l_shoulder.midPointX(r_shoulder)
+    config.r_shoulderX = r_shoulder.x
+    config.l_shoulderX = l_shoulder.x
+
     config.span = l_shoulder.dist(r_shoulder)
     config.r_bicep = r_shoulder.dist(r_elbow)
     config.l_bicep = l_shoulder.dist(l_elbow)
@@ -189,9 +209,10 @@ def calibrate(joints: 'list[Joint2D]'):
     config.l_forearm = l_elbow.dist(l_wrist)
     config.r_arm = config.r_bicep + config.r_forearm
     config.l_arm = config.l_bicep + config.l_forearm
+    
     config.calibrated = True
 
-    for key in actionKeys:
-        keyboard.KeyUp(key)
+    dolphinControls.reset()
+
     for action in actionsNames:
         controller.actionCheck[action] = False

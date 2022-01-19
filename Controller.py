@@ -44,7 +44,7 @@ class Controller():
                 else:
                     if(not self.actionCheck[action]):
                         # first key
-                        if(config.delay):
+                        if(config.delay > 0):
                             Timer(config.delay, self.pressKey, (key)).start()
                         else:           
                             keyboard.KeyDown(key)

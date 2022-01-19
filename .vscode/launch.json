@@ -4,9 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-
-
         {
             "name": "Python: Current File",
             "type": "python",
@@ -15,17 +12,17 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: controller 2D",
+            "name": "Python: run pyMove",
             "type": "python",
             "request": "launch",
-            "program": "controller2d.py",
+            "program": "pyMove.py",
             "console": "integratedTerminal",
         },
         {
-            "name": "Python: controller 2D Debug",
+            "name": "Python: pyMove Debug",
             "type": "python",
             "request": "launch",
-            "program": "controller2d.py",
+            "program": "pyMove.py",
             "console": "integratedTerminal",
             "args": ["True"]
         },

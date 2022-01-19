@@ -1,12 +1,18 @@
 import sys
+from DolphinControls import Stick
 
 games = ['SSBB', 'PUNCH', 'METROID', "BOXING"]
-GAME = games[0] 
+GAME = games[1] 
 
-DEBUG = False
+DEBUG = True
 
 if(len(sys.argv) > 1):
-    DEBUG = bool(sys.argv[1])
+    DEBUG = sys.argv[1] != 'False'
+
+if(len(sys.argv) >2 ):
+    gameIndex = int(sys.argv[2])
+    GAME = games[gameIndex]
+
 
 
 PAUSED = True
@@ -24,6 +30,11 @@ h = int(720*scale)
 w = int(960*scale)
 
 mouseLocation = (0,0)
+
+sticks = {
+    Stick.MAIN: [.5,.5],
+    Stick.C: [.5,.5]
+}
 
 
 
@@ -44,6 +55,9 @@ r_forearm =  0
 l_forearm =  0
 r_arm = 0
 l_arm = 0
+
+l_shoulderX = 0
+r_shoulderX = 0
 
 
 

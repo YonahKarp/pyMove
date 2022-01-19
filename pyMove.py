@@ -6,15 +6,17 @@ import time
 import numpy as np
 
 from WebcamStream import WebcamStream
+# from pseyepy import Camera
 
-from Keyboard import keyboard
-from Controller import controller
+# from Keyboard import keyboard
+from DolphinControls import dolphinControls
+# from Controller import controller
+from PipeController import controller
 from joint import Joint2D
 from overlay import putText
 from constants import *
 import config 
 from actions.actionFactory import pointerActions, checkForActions, pauseActions
-from controls.controlFactory import actionKeys
 
 import landmark_utils
 from landmark_utils import jointNames, hand_names
@@ -24,12 +26,15 @@ mp_pose = mp.solutions.pose
 mp_holistic = mp.solutions.holistic
 mp_drawing = mp.solutions.drawing_utils
 
-solution = mp.solutions.pose.Pose if config.GAME in ['SSBB'] \
+solution = mp.solutions.pose.Pose if config.GAME in ['SSBB', 'PUNCH'] \
             else mp.solutions.holistic.Holistic
 
+@profile()
 def start():
 
-    cap = WebcamStream(border=config.border).start()
+    cap = Camera(fps=150, colour=False)
+
+    # cap = WebcamStream().start()
 
     joints =    [Joint2D(name, -1,-1) for name in jointNames]
     hand =      [Joint2D(name, -1,-1) for name in hand_names]
@@ -51,7 +56,7 @@ def start():
         frameNum += 1
             
         # print(cap.hasNew)
-        frame = cap.read()
+        frame, timestamp = cap.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame.flags.writeable = False
@@ -150,6 +155,7 @@ def start():
 
     cv2.destroyAllWindows()
     cap.stopped = True
+    # cap.end()
     print('done')
 
 
@@ -158,8 +164,8 @@ if __name__ == "__main__":
 
     cv2.destroyAllWindows()
 
-    for key in actionKeys:
-        keyboard.KeyUp(key, True)
+    dolphinControls.reset()
+
 
     start()
 

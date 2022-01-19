@@ -1,4 +1,5 @@
 from joint import Joint2D, noneJoint
+from DolphinControls import Stick
 import config 
 
 from overlay import maskPointer, maskRight_jab, maskLeft_jab, putText, \
@@ -6,7 +7,8 @@ from overlay import maskPointer, maskRight_jab, maskLeft_jab, putText, \
     maskLeft_AtkD, maskLeft_AtkL, maskLeft_AtkR, maskLeft_AtkU, \
     maskRight_AtkD, maskRight_AtkL, maskRight_AtkR, maskRight_AtkU
 from constants import *
-from Keyboard import keyboard
+# from Keyboard import keyboard
+from DolphinControls import dolphinControls
 from controls.controlFactory import actionKeys, actionsNames
 
 from Controller import controller
@@ -16,6 +18,9 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     lateral_movement = ''
     movement_hard = False
 
+    config.sticks[Stick.MAIN] = [.5,.5]
+    config.sticks[Stick.C] = [.5,.5]
+
 
     head, l_shoulder, r_shoulder, l_elbow, r_elbow, l_wrist, r_wrist, l_hip, r_hip = joints
 
@@ -24,24 +29,27 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     l_arm = l_shoulder.dist(l_elbow) + l_elbow.dist(l_wrist)
 
 # Lateral Movement
-    if(l_shoulder.midPointX(r_shoulder) > config.mid + .75*span):
-        maskLeft(frame, 1.5)
-        actions.append('hard left')
-        lateral_movement = '_left'
-        movement_hard = True
+    # if(l_shoulder.midPointX(r_shoulder) > config.mid + .75*span):
+    #     maskLeft(frame, 1.5)
+    #     actions.append('hard left')
+    #     lateral_movement = '_left'
+    #     movement_hard = True
 
-    elif(l_shoulder.midPointX(r_shoulder) > config.mid + .35*span):
+    movement = l_shoulder.midPointX(r_shoulder) - config.mid
+    if(movement > .3*span):
+        config.sticks[Stick.MAIN][0] = .5 - min((abs(movement) - .3*span)/(2*(.7*span - .3*span)),.5)
         maskLeft(frame)
         actions.append('left')
         lateral_movement = '_left'
 
-    elif(l_shoulder.midPointX(r_shoulder)  < config.mid - .75*span):
-        maskRight(frame, 1.5)
-        actions.append('hard right')
-        lateral_movement = '_right'
-        movement_hard = True
+    # elif(l_shoulder.midPointX(r_shoulder)  < config.mid - .75*span):
+    #     maskRight(frame, 1.5)
+    #     actions.append('hard right')
+    #     lateral_movement = '_right'
+    #     movement_hard = True
     
-    elif(l_shoulder.midPointX(r_shoulder)  < config.mid - .35*span):
+    elif(movement < - .3*span):
+        config.sticks[Stick.MAIN][0] = .5 + min((abs(movement) - .3*span)/ (2*(.7*span - .3*span)),.5)
         maskRight(frame)
         actions.append('right')
         lateral_movement = '_right'
@@ -57,6 +65,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     if(l_shoulder.y     > (config.height + .15)  
       and r_shoulder.y  > (config.height + .15)):
         maskDown(frame)
+        config.sticks[Stick.MAIN][1] = 1
         actions.append('duck')
 
 # Dual Hand
@@ -98,6 +107,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
       ):
         # maskRight_AtkU(frame)
         maskRight_jab(frame)
+        config.sticks[Stick.MAIN][1] = 0
         actions.append('rHand uptilt')
         actions.append('up')
 
@@ -106,14 +116,17 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     #   or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))
       ):
         maskRight_AtkU(frame)
+        config.sticks[Stick.C][1] = 0
         actions.append('rHand up')
 
     elif(r_wrist.isRightOf(r_shoulder, config.r_arm*.7)):
         maskRight_AtkR(frame)
+        config.sticks[Stick.C][0] = 1
         actions.append('rHand right')
 
     elif(r_wrist.isLeftOf(r_shoulder, span*.9) and r_wrist.isAbove(r_hip)):
         maskRight_AtkL(frame)
+        config.sticks[Stick.C][0] = 0
         actions.append('rHand left')
 
     elif( r_wrist.isBetweenX(r_shoulder, l_shoulder) 
@@ -124,6 +137,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
         #   and r_wrist.isInline(r_elbow, r_shoulder, span*.2))
     ):
         maskRight_AtkD(frame)
+        config.sticks[Stick.C][1] = 1
         actions.append('rHand down')
 
     # elif(
@@ -150,16 +164,25 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     #   or (r_wrist.isAbove(r_shoulder, span*.2) and r_wrist.isRightOf(r_shoulder, span*.7))
       ):
         maskLeft_AtkU(frame)
-        actions.append('lHand up' + lateral_movement)
+        config.sticks[Stick.MAIN][1] = 0
+        if(lateral_movement == '_left'): config.sticks[Stick.MAIN][0] = 0
+        if(lateral_movement == '_right'): config.sticks[Stick.MAIN][0] = 1
 
 
-    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7) and not movement_hard):
+        actions.append('lHand up')
+
+
+    elif(l_wrist.isLeftOf(l_shoulder, config.l_arm*.7) 
+      # and not movement_hard
+    ):
         maskLeft_AtkL(frame)
+        config.sticks[Stick.MAIN][0] = .3
         actions.append('lHand left')
 
 
     elif(l_wrist.isRightOf(l_shoulder, span*.9) and l_wrist.isAbove(l_hip)):
         maskLeft_AtkR(frame)
+        config.sticks[Stick.MAIN][0] = .7
         actions.append('lHand right')
 
     elif(l_wrist.isBetweenX(r_shoulder, l_shoulder) 
@@ -170,6 +193,7 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     #   and l_wrist.isCloseTo(l_hip, span*.3)
     ):
         maskLeft_AtkD(frame)
+        config.sticks[Stick.MAIN][1] = 1
         actions.append('lHand down')
 
     # elif(
@@ -179,8 +203,8 @@ def checkForActions(frame, joints : 'list[Joint2D]', _=None):
     #     actions.append('lHand jab')
 
     
-    if config.DEBUG == 1:
-        return []
+    # if config.DEBUG == 1:
+    #     return []
 
     return actions
 
@@ -228,7 +252,9 @@ def calibrate(joints : 'list[Joint2D]'):
     config.l_arm = config.l_bicep + config.l_forearm
     config.calibrated = True
 
-    for key in actionKeys:
-        keyboard.KeyUp(key)
+    # for key in actionKeys:
+    #     keyboard.KeyUp(key)
+    dolphinControls.reset()
+    
     for action in actionsNames:
         controller.actionCheck[action] = False
