@@ -1,4 +1,4 @@
-# Pymovement controller
+# pyMove controller
 
 A kinect like movement system for controlling games using webcam and body motion
 
