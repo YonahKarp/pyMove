@@ -2,7 +2,7 @@ import sys
 from DolphinControls import Stick
 
 games = ['SSBB', 'PUNCH', 'METROID', "BOXING"]
-GAME = games[1] 
+GAME = games[0] 
 
 DEBUG = True
 

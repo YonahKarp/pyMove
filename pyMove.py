@@ -32,9 +32,8 @@ solution = mp.solutions.pose.Pose if config.GAME in ['SSBB', 'PUNCH'] \
 @profile()
 def start():
 
-    cap = Camera(fps=150, colour=False)
 
-    # cap = WebcamStream().start()
+    cap = WebcamStream().start()
 
     joints =    [Joint2D(name, -1,-1) for name in jointNames]
     hand =      [Joint2D(name, -1,-1) for name in hand_names]
@@ -56,7 +55,7 @@ def start():
         frameNum += 1
             
         # print(cap.hasNew)
-        frame, timestamp = cap.read()
+        frame = cap.read()
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame.flags.writeable = False
